@@ -1,2 +1,2 @@
 # SDAA
-Sensitivity Data Abnormality Analyzer
+Sensitive Data Abnormality Analyzer
