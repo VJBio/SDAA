@@ -11,8 +11,14 @@ PREQUISITES_UI <- function(id) {
     "",
     value = "Tab1",
     fluidRow(
-      column(3, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".xlsx"))
+      column(3, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".xlsx")),
+      
+      column(3, fileInput(ns("files1"), "Upload Clin Pharma Lead Normal Values", accept = ".xlsx")),
+      
+      column(3, fileInput(ns("files2"), "Upload Treatment Codes File", accept = ".xlsx"))
     ),
+    
+    
     fluidRow(
       box(
         title = "SDAA DATA",
@@ -27,6 +33,36 @@ PREQUISITES_UI <- function(id) {
                  DT::dataTableOutput(ns("dtout")) %>% withSpinner(color = "#0095FF")
           )
         )
+      ),
+      
+      box(
+        title = "Clin Pharma Lead Normal Values",
+        closable = FALSE,
+        width = 12,
+        status = "warning",
+        solidHeader = FALSE,
+        collapsible = TRUE,
+        fluidRow(
+          column(12,
+                 align = "center",
+                 DT::dataTableOutput(ns("dtout1")) %>% withSpinner(color = "#0095FF")
+          )
+        )
+      ),
+      
+      box(
+        title = "Treatment Codes File",
+        closable = FALSE,
+        width = 12,
+        status = "warning",
+        solidHeader = FALSE,
+        collapsible = TRUE,
+        fluidRow(
+          column(12,
+                 align = "center",
+                 DT::dataTableOutput(ns("dtout2")) %>% withSpinner(color = "#0095FF")
+          )
+        )
       )
     )
   )
@@ -35,56 +71,53 @@ PREQUISITES_UI <- function(id) {
 
 
 # Server Function
+# Server Function (modified)
 PREQUISITES_server <- function(id) {
   moduleServer(id, function(input, output, session) {
-    ns <- NS(id)  # Correctly create the namespace
+    ns <- NS(id)
     
-    uploadedData <- reactiveVal(NULL)
+    w <- Waiter$new(id = ns("waiter"))  # Namespaced waiter ID
     
-    
-    w<- Waiter$new()
-    observeEvent(input$files,{
-      if(is.null(input$files))
-      {
-        sendSweetAlert(session = session, title = "Error", text = "No Records Present", type = "error")
-      }
-      else
-      {
+    read_data <- function(file_input) {
+      req(file_input)
+      if (str_sub(file_input$name, -4) == "xlsx") {
         w$show()
-        
-        output$dtout <- DT::renderDataTable({
-          if(str_sub(input$files$name, -4) != "xlsx"){
-            shinyalert("Error.....!", "Please Select .xlsx file.", type = "error")
-          }
-          
-          else
-          {
-            data <- readxl::read_excel(input$files$datapath)
-            uploadedData(data)
-            # FinalData <- readxl::read_xlsx(input$files$datapath)
-            print(head(uploadedData, 10))
-            # print(colnames(data))
-            datatable(uploadedData(), 
-                      options = list(
-                        dom = 't',
-                        scroller = TRUE,
-                        scrollX = TRUE, 
-                        "pageLength" = 100),
-                      rownames = FALSE
-            )
-          }
-          
+        tryCatch({
+          data <- readxl::read_excel(file_input$datapath)
+          w$hide()
+          data
+        }, error = function(e) {
+          w$hide()
+          showModal(modalDialog(title = "Error", paste("Error reading file:", e$message)))
+          NULL
         })
-        
-        w$hide()
+      } else {
+        w$hide() # Hide waiter if wrong file type
+        sendSweetAlert(session, title = "Error", text = "Please Select .xlsx file.", type = "error")
+        NULL
       }
-      print("Uploaded Data")
-      print(uploadedData)
-      
-    })
-    return(uploadedData)
+    }
+    
+    THdata <- reactive({ read_data(input$files) })
+    data1 <- reactive({ read_data(input$files1) })
+    data2 <- reactive({ read_data(input$files2) })
+    
+    output$dtout <- DT::renderDataTable(datatable(THdata(), 
+                                                  options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
+                                                  rownames = FALSE))
+    
+    output$dtout1 <- DT::renderDataTable(datatable(data1(), 
+                                                   options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
+                                                   rownames = FALSE))
+    
+    output$dtout2 <- DT::renderDataTable(datatable(data2(), 
+                                                   options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
+                                                   rownames = FALSE))
+    
+    return(list(THdata = THdata, data1 = data1, data2 = data2))
   })
 }
+
 
 # Module to call server function
 PREQUISITES_module <- function(id) {

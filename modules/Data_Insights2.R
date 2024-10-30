@@ -1,107 +1,164 @@
 
-Data_Insights_UI_2 <- function(id){
+Data_Insights_UI_2 <- function(id) {
   ns <- NS(id)
   
-  tabPanel(
-    "Load Data",
-    value = "Tab3",
-
-  # fluidRow(
-  #   valueBoxOutput(ns("STUDYID")),  # Using ns() for modular ID scoping
-  #   valueBoxOutput(ns("AVG_PCL_Value")),
-  #   valueBoxOutput(ns("Total_SUBJECT_ID"))
-  # ),
-  # 
-  # fluidRow(
-  #   box(
-  #     title = "Normal Distribution of PCL Values",
-  #     closable = FALSE, 
-  #     width = 12,
-  #     status = "warning", 
-  #     solidHeader = FALSE, 
-  #     collapsible = TRUE,
-  #     plotlyOutput(ns("Normal_Dist_Plot"))
-  #   )
-  # ),
-  # 
-  # fluidRow(
-  #   box(
-  #     title = "PCL Values Subject ID Wise",
-  #     closable = FALSE, 
-  #     width = 12,
-  #     status = "warning", 
-  #     solidHeader = FALSE, 
-  #     collapsible = TRUE,
-  #     plotlyOutput(ns("Subjectid_viz"))
-  #   )
-  # )
-)
-  
+  fluidPage(
+    titlePanel("SD Listing with Abnormal Value Highlighting"),
+    
+    fluidRow(
+      column(
+        width = 3,  # Sidebar panel for filters
+        div(
+          id = "filter-panel",
+          style = "background-color: #f9f9f9; padding: 10px; border-radius: 5px; max-height: 90vh; overflow-y: auto;",
+          
+          h4("Filters", style = "text-align:center; margin-top: 15px;"),
+          
+          # Visit Filter
+          tags$div(
+            h5("Select VISIT:"),
+            tags$div(
+              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+              checkboxGroupInput(ns("visit_filter"), label = NULL, choices = NULL, selected = NULL)
+            )
+          ),
+          
+          # PCTPT Filter
+          tags$div(
+            h5("Select PCTPT:"),
+            tags$div(
+              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+              checkboxGroupInput(ns("pctpt_filter"), label = NULL, choices = NULL, selected = NULL)
+            )
+          ),
+          
+          # Subject ID Filter
+          tags$div(
+            h5("Select SUBJECT ID:"),
+            tags$div(
+              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+              checkboxGroupInput(ns("subjid_filter"), label = NULL, choices = NULL, selected = NULL)
+            )
+          ),
+          
+          # PKACOM Filter
+          tags$div(
+            h5("Select PKACOM:"),
+            tags$div(
+              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+              checkboxGroupInput(ns("pkacom_filter"), label = NULL, choices = NULL, selected = NULL)
+            )
+          ),
+          
+          # PKCOML Filter
+          tags$div(
+            h5("Select PKCOML:"),
+            tags$div(
+              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+              checkboxGroupInput(ns("pkcoml_filter"), label = NULL, choices = NULL, selected = NULL)
+            )
+          )
+        )
+      ),
+      column(
+        width = 9,  # Main content panel for data table
+        div(
+          id = "data-table-container",
+          style = "padding: 10px;",
+          DTOutput(ns("filtered_data_table"))
+        )
+      )
+    )
+  )
 }
 
-Data_Insights_server_2 <- function(id, data) {
+
+Data_Insights_server_2 <- function(id, uploadedData) {
   moduleServer(id, function(input, output, session) {
-    
     ns <- session$ns
     
-    # output$Normal_Dist_Plot <- renderPlotly({
-    #   Fdata <- data()  # Fetch the reactive data
-    #   if (!is.null(Fdata)) {
-    #     normal_distribution(data = Fdata, parameter = Fdata$PCLLOQ, xname = "PCLLOQ Range")
-    #   }
-    # })
-    # 
-    # output$Subjectid_viz <- renderPlotly({
-    #   Fdata <- data()  # Fetch the reactive data
-    #   if (!is.null(Fdata)) {
-    #     plot_ly(
-    #       x = Fdata$SUBJID,
-    #       y = Fdata$PCLLOQ,
-    #       name = "PCL Values by Subject ID wise",
-    #       type = "bar"
-    #     )
-    #   }
-    # })
+    # Reactive dataset to load THdata and data1
+    data <- reactive({
+      req(uploadedData$THdata(), uploadedData$data1())  # Ensure both datasets are available
+      
+      # Get the datasets
+      df <- uploadedData$THdata()
+      normal_values <- uploadedData$data1()
+      
+      # Debugging: Print summaries of both datasets to ensure they are loaded
+      cat("THdata Summary:\n")
+      print(head(df))
+      cat("Normal Values Summary:\n")
+      print(head(normal_values))
+      
+      return(list(df = df, normal_values = normal_values))
+    })
     
-    # output$STUDYID <- renderValueBox({
-    #   Fdata <- data() 
-    #   valueBox(
-    #     elevation = 4,
-    #     value = n_distinct(Fdata$STUDYID),
-    #     subtitle = "Study ID Value",
-    #     color = "primary",
-    #     icon = icon("cart-shopping"),
-    #     href = "#"
-    #   )
-    # })
-    # 
-    # # Render the second value box dynamically
-    # output$AVG_PCL_Value <- renderValueBox({
-    #   Fdata <- data() 
-    #   valueBox(
-    #     elevation = 4,
-    #     value = mean(Fdata$PCLLOQ),
-    #     subtitle = "AVG PCL Value",
-    #     color = "primary",
-    #     icon = icon("gears")
-    #   )
-    # })
-    # 
-    # output$Total_SUBJECT_ID <- renderValueBox({
-    #   Fdata <- data() 
-    #   valueBox(
-    #     elevation = 4,
-    #     value = n_distinct(Fdata$SUBJID),
-    #     subtitle = "Processing Rate",
-    #     color = "primary",
-    #     icon = icon("gears")
-    #   )
-    # })
+    # Update filter options dynamically
+    observe({
+      req(data())  # Ensure data is available
+      df <- data()$df
+      
+      updateCheckboxGroupInput(session, "visit_filter", choices = unique(df$VISIT), selected = unique(df$VISIT))
+      updateCheckboxGroupInput(session, "pctpt_filter", choices = unique(df$PCTPT), selected = unique(df$PCTPT))
+      updateCheckboxGroupInput(session, "subjid_filter", choices = unique(df$SUBJID), selected = unique(df$SUBJID))
+      updateCheckboxGroupInput(session, "pkacom_filter", choices = unique(df$PKACOM), selected = unique(df$PKACOM))
+      updateCheckboxGroupInput(session, "pkcoml_filter", choices = unique(df$PKCOML), selected = unique(df$PKCOML))
+    })
     
+    # Reactive dataset to add abnormality status
+    processed_data <- reactive({
+      req(data())  # Ensure data is available
+      df <- data()$df
+      normal_values <- data()$normal_values
+      
+      # Convert PCORRES to numeric (handling "<" values)
+      df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
+        if (grepl("^<", x)) {
+          limit_value <- as.numeric(sub("<", "", x))
+          return(limit_value * 0.75)
+        } else {
+          return(as.numeric(x))
+        }
+      })
+      
+      # Join with normal_values to bring LLOQ and ULOQ based on VISIT
+      df <- df %>%
+        left_join(normal_values %>% select(VISIT, LLOQ, ULOQ), by = "VISIT")
+      
+      # Add a status column to determine if values are abnormal
+      df <- df %>%
+        mutate(
+          Status = ifelse(!is.na(LLOQ) & !is.na(ULOQ) & (PCORRES_numeric < LLOQ | PCORRES_numeric > ULOQ), "Abnormal", "Normal")
+        )
+      
+      # Debug: Check the status column and LLOQ/ULOQ values
+      cat("Data with Status Column Summary:\n")
+      print(head(df))
+      
+      return(df)
+    })
+    
+    # Render the filtered data table with highlighting for abnormal values
+    output$filtered_data_table <- renderDT({
+      req(processed_data())  # Ensure processed data is available
+      
+      df <- processed_data()
+      
+      # Render the data table with highlighting for abnormalities
+      datatable(df, options = list(pageLength = 10, scrollX = TRUE), rownames = FALSE) %>%
+        formatStyle(
+          columns = names(df),
+          target = 'row',
+          backgroundColor = styleEqual("Abnormal", "pink")  # Highlight rows with "Abnormal" status
+        )
+    })
   })
 }
 
-Data_Insights_module_2 <- function(id, data) {
+
+Data_Insights_module_2 <- function(id, uploadedData) {
   Data_Insights_UI_2(id)
-    Data_Insights_server_2(id, data)
+  Data_Insights_server_2(id, uploadedData)
 }
+

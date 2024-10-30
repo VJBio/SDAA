@@ -5,7 +5,7 @@ ui <- bs4DashPage(
   dark = FALSE,
   help = NULL,
   header = dashboardHeader(
-    title = img(src = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png", width = "145px", style = "margin-top: 1px;"),  # Add your custom logo,  # Set title to NULL to remove the default title
+    title = img(src = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png", width = "145px", style = "margin-left: 3px; margin-top: 1px;"),  # Add your custom logo,  # Set title to NULL to remove the default title
     
     fixed = TRUE,
     
@@ -13,7 +13,7 @@ ui <- bs4DashPage(
                navbarTab(tabName = "Tab1", text = "PREQUISITES"),
                navbarTab(tabName = "Tab2", text = "SDAA DASHBOARD"),
                navbarTab(tabName = "Tab3", text = "SD LISTING"),
-               navbarTab(tabName = "Tab4", text = "VISUALS & DATA TABLEs"),
+               navbarTab(tabName = "Tab4", text = "VISUAL & DATA TABLE"),
                navbarTab(tabName = "Tab5", text = "HELP"),
                navbarTab(tabName = "Tab6", text = "VERSION HISTORY")
                

@@ -20,8 +20,8 @@ server <- function (input, output, session) {
   # Call the Data Load Module
   uploadedData <- PREQUISITES_server("PREQUISITES")  # No need to use callModule
   
-  print("Reactive Data")
-  print(head(uploadedData, 10))
+  # print("Reactive Data")
+  # print(head(uploadedData, 10))
   
   # Call the Data Insights Module and pass the reactive data correctly
   SDAA_DASHBOARD_module("SDAA_DASHBOARD", uploadedData)
