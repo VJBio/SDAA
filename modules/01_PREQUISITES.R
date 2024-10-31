@@ -1,7 +1,7 @@
 library(shiny)
 library(bs4Dash)
-library(DT)  # Ensure DT is loaded for rendering data tables
-library(waiter)  # Make sure to include this for the Waiter functionality
+library(DT)  
+library(waiter)  
 
 # UI Function
 PREQUISITES_UI <- function(id) {

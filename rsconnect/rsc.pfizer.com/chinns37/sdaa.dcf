@@ -5,7 +5,7 @@ account: chinns37
 server: rsc.pfizer.com
 hostUrl: https://rsc.pfizer.com/__api__
 appId: 10309
-bundleId: 64800
+bundleId: 64807
 url: https://rsc.pfizer.com/content/e7c64d1f-5a53-4851-98ba-14867ccc5c93/
 version: 1
 asMultiple: FALSE

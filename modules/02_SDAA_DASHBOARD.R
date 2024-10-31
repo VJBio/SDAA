@@ -13,7 +13,7 @@ SDAA_DASHBOARD_UI <- function(id){
       column(2, pickerInput(ns("subj_id_select"), "Select Subject ID", 
                             choices = NULL, options = list(`live-search` = TRUE))),
       
-      column(2, actionBttn(ns("update_plots"), label = "Update Visuals", style = "fill")) # Add update button
+      column(2, actionBttn(ns("update_plots"), label = "Update Visuals", style = "fill")) # Adding update button
       
     ),
     
@@ -25,7 +25,9 @@ SDAA_DASHBOARD_UI <- function(id){
       
       valueBoxOutput(ns("Category")),
       
-      valueBoxOutput(ns("Bioanalytical_Method"))
+      valueBoxOutput(ns("Bioanalytical_Method")), 
+      
+      valueBoxOutput(ns("Total_Abnormalities"))
       
     ),
     
@@ -62,16 +64,16 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
     
     ns <- session$ns
     
-    # Update Study ID dropdown choices when data is available
+    # Updating Study ID dropdown choices when data is available
     observeEvent(uploadedData$THdata(), {
       study_ids <- unique(uploadedData$THdata()$STUDYID)
       updatePickerInput(session, "study_id_select", choices = study_ids)
     })
     
     
-    # Update Subject ID dropdown based on selected Study ID
+    # Updating Subject ID dropdown based on selected Study ID
     observeEvent(input$study_id_select, {
-      req(input$study_id_select) # Require a Study ID to be selected
+      req(input$study_id_select) 
       
       filtered_data <- uploadedData$THdata() %>% 
         filter(STUDYID == input$study_id_select)
@@ -80,7 +82,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       updatePickerInput(session, "subj_id_select", choices = subj_ids)
     })    
     
-    filtered_data <- eventReactive(input$update_plots, { # Use eventReactive
+    filtered_data <- eventReactive(input$update_plots, { 
       
       req(uploadedData$THdata(), 
           input$study_id_select, 
@@ -101,14 +103,14 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       
       # Convert ULOQ and LLOQ to numeric (removing units)
       normal_values_numeric <- uploadedData$data1() %>%
-        mutate(ULOQ = as.numeric(gsub("[^0-9.]", "", ULOQ)),  # Extract numeric part
+        mutate(ULOQ = as.numeric(gsub("[^0-9.]", "", ULOQ)),  # Extracting numeric part
                LLOQ = as.numeric(gsub("[^0-9.]", "", LLOQ)))
       
-      # Join and filter (Adjusted join and filter logic)
+      # Join and filter 
       joined_data <- FLT %>%
-        left_join(normal_values_numeric, by = c("STUDYID", "TREATXT", "VISIT")) # Join by relevant columns
+        left_join(normal_values_numeric, by = c("STUDYID", "TREATXT", "VISIT")) # Joined by relevant columns
       
-      # Return joined data for use in the plot
+      
       return(joined_data)
     })
     
@@ -132,23 +134,21 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       
       plot_df <- plot_data()
       
-      # Adding a column to classify the data as "Normal" or "Abnormal"
       plot_df <- plot_df %>%
         mutate(Status = ifelse(PCORRES >= LLOQ & PCORRES <= ULOQ, "Normal", "Abnormal"))
       
-      # Creating a scatter plot using plotly and differentiate based on Status (Normal or Abnormal)
       fig <- plot_ly(
         data = plot_df,
         x = ~VISIT,
         y = ~PCORRES,
         type = 'scatter',
         mode = 'markers',
-        color = ~Status,  # Coloring based on the new "Status" column
-        colors = c("Normal" = "blue", "Abnormal" = "red"),  # Customizing colors for Normal and Abnormal
-        symbol = ~Status,  # Setting marker symbols for Normal and Abnormal
-        symbols = c("Normal" = "circle", "Abnormal" = "x"),  # Different shapes for Normal and Abnormal
+        color = ~Status,  
+        colors = c("Normal" = "blue", "Abnormal" = "red"),  
+        symbol = ~Status,  
+        symbols = c("Normal" = "circle", "Abnormal" = "x"),  
         marker = list(
-          size = ~ifelse(Status == "Abnormal", 12, 8)  # Setting larger size for Abnormal values
+          size = ~ifelse(Status == "Abnormal", 12, 8)  
         ),
         hoverinfo = "text",
         text = ~paste("Subject:", SUBJID, "<br>Visit:", VISIT, "<br>Timepoint:", PCTPT, "<br>PCORRES:", PCORRES)
@@ -157,7 +157,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           title = "Concentration Values Over Visits",
           xaxis = list(title = "Visit"),
           yaxis = list(title = "Concentration"),
-          showlegend = TRUE  # legend to distinguish between Normal and Abnormal
+          showlegend = TRUE 
         )
       
       fig
@@ -178,7 +178,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       )
     })
     
-    # Render the second value box dynamically
+    # Rendering the second value box dynamically
     output$Category <- renderValueBox({
       req(filtered_data())
       Fdata <- filtered_data()
@@ -218,6 +218,40 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         icon = icon("memo")
       )
     })
+    
+    
+    output$Total_Abnormalities <- renderValueBox({
+      req(uploadedData$THdata(), uploadedData$data1())
+      
+      # Join data to get LLOQ and ULOQ values
+      FLT <- uploadedData$THdata()
+      
+      # Convert PCORRES to numeric, handling "<" values by assuming 0.3 when PCORRES == "<0.400"
+      FLT <- FLT %>%
+        mutate(PCORRES = as.numeric(ifelse(grepl("^<", PCORRES), 0.3, as.numeric(PCORRES))))
+      
+      # Convert ULOQ and LLOQ to numeric (removing units)
+      normal_values_numeric <- uploadedData$data1() %>%
+        mutate(ULOQ = as.numeric(gsub("[^0-9.]", "", ULOQ)),  # Extract numeric part
+               LLOQ = as.numeric(gsub("[^0-9.]", "", LLOQ)))
+      
+      # Join and filter to get abnormal values (Adjusted join and filter logic)
+      joined_data <- FLT %>%
+        left_join(normal_values_numeric, by = c("STUDYID", "TREATXT", "VISIT")) %>%
+        filter(PCORRES < LLOQ | PCORRES > ULOQ)  # Filtering to get only abnormal values
+      
+      total_abnormalities <- nrow(joined_data)  # Get the count of abnormalities
+      
+      valueBox(
+        elevation = 3,
+        value = total_abnormalities,
+        subtitle = "Total Abnormalities in Study",
+        color = "danger",
+        icon = icon("exclamation-triangle"),
+        href = NULL
+      )
+    })
+    
     
     output$rcount <- renderEcharts4r({
       req(filtered_data())

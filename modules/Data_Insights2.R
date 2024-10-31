@@ -79,9 +79,9 @@ Data_Insights_server_2 <- function(id, uploadedData) {
     
     # Reactive dataset to load THdata and data1
     data <- reactive({
-      req(uploadedData$THdata(), uploadedData$data1())  # Ensure both datasets are available
+      req(uploadedData$THdata(), uploadedData$data1())  
       
-      # Get the datasets
+      
       df <- uploadedData$THdata()
       normal_values <- uploadedData$data1()
       
@@ -94,7 +94,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       return(list(df = df, normal_values = normal_values))
     })
     
-    # Update filter options dynamically
+    # Updating filter options dynamically
     observe({
       req(data())  # Ensure data is available
       df <- data()$df
@@ -112,7 +112,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       df <- data()$df
       normal_values <- data()$normal_values
       
-      # Convert PCORRES to numeric (handling "<" values)
+      # Converting PCORRES to numeric (handling "<" values)
       df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
         if (grepl("^<", x)) {
           limit_value <- as.numeric(sub("<", "", x))
@@ -122,7 +122,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
         }
       })
       
-      # Join with normal_values to bring LLOQ and ULOQ based on VISIT
+      # Joining with normal_values to bring LLOQ and ULOQ based on VISIT
       df <- df %>%
         left_join(normal_values %>% select(VISIT, LLOQ, ULOQ), by = "VISIT")
       
@@ -132,20 +132,20 @@ Data_Insights_server_2 <- function(id, uploadedData) {
           Status = ifelse(!is.na(LLOQ) & !is.na(ULOQ) & (PCORRES_numeric < LLOQ | PCORRES_numeric > ULOQ), "Abnormal", "Normal")
         )
       
-      # Debug: Check the status column and LLOQ/ULOQ values
+      # Debugging: Check the status column and LLOQ/ULOQ values
       cat("Data with Status Column Summary:\n")
       print(head(df))
       
       return(df)
     })
     
-    # Render the filtered data table with highlighting for abnormal values
+    # Rendering the filtered data table with highlighting for abnormal values
     output$filtered_data_table <- renderDT({
       req(processed_data())  # Ensure processed data is available
       
       df <- processed_data()
       
-      # Render the data table with highlighting for abnormalities
+      # Rendering the data table with highlighting for abnormalities
       datatable(df, options = list(pageLength = 10, scrollX = TRUE), rownames = FALSE) %>%
         formatStyle(
           columns = names(df),

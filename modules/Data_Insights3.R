@@ -97,7 +97,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       req(uploadedData$THdata())  # Ensure THdata is available
       df <- uploadedData$THdata()
       
-      # Convert concentration to numeric dynamically, handling "<" values
+      # Converting concentration to numeric dynamically, handling "<" values
       df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
         if (grepl("^<", x)) {
           limit_value <- as.numeric(sub("<", "", x))
@@ -107,13 +107,13 @@ Data_Insights_server_3 <- function(id, uploadedData) {
         }
       })
       
-      # Convert timepoint to numeric for sorting purposes
+      # Converting timepoint to numeric for sorting purposes
       df$time_numeric <- as.numeric(sub(" H", "", df$PCTPT))
       
       # Order timepoint dynamically and create a factor with ordered levels
       df$PCTPT_factor <- factor(df$PCTPT, levels = unique(df$PCTPT[order(df$time_numeric)]))
       
-      # Create a unique identifier for each VISIT and SUBJID combination
+      # Creating a unique identifier for each VISIT and SUBJID combination
       df$visit_id <- paste(df$SUBJID, df$VISIT, sep = "_")
       
       return(df)
@@ -129,18 +129,18 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       }
     })
     
-    # Update checkboxGroupInput for SUBJID based on the search input
+    # Updating checkboxGroupInput for SUBJID based on the search input
     observe({
       req(filtered_subjid())
       updateCheckboxGroupInput(
         session,
         "subjid_filter",
         choices = filtered_subjid(),
-        selected = filtered_subjid()  # Select all the values available after the search
+        selected = filtered_subjid()  
       )
     })
     
-    # Update filter options dynamically when data is available
+    # Updating filter options dynamically 
     observe({
       req(data())
       df <- data()
@@ -159,7 +159,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
                                selected = unique(df$PCTPT))
     })
     
-    # Observe the RESET button click and reset all filters to their default values
+    
     observeEvent(input$reset_filters, {
       req(data())
       df <- data()
@@ -175,7 +175,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
     filtered_data <- reactive({
       req(data())
       
-      # If no specific filters have been applied, return the entire dataset
+      # If no specific filters have been applied, should return the entire dataset
       subjid_filter <- input$subjid_filter
       visit_filter <- input$visit_filter
       pctpt_filter <- input$pctpt_filter
@@ -190,7 +190,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
         pctpt_filter <- unique(data()$PCTPT)
       }
       
-      # Filter the data based on the inputs
+      # Filtering the data based on the inputs
       filtered <- data() %>%
         filter(
           SUBJID %in% subjid_filter,
@@ -201,7 +201,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       return(filtered)
     })
     
-    # Create the ggplot object based on filtered data
+    # Creating the ggplot object based on filtered data
     output$interactive_plot <- renderPlotly({
       req(filtered_data())
       filtered <- filtered_data()
@@ -210,7 +210,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
         return(NULL)
       }
       
-      # Create ggplot object with dynamic theme selection
+      # Creating ggplot object with dynamic theme selection
       ggplot_obj <- ggplot(filtered, aes(x = PCTPT_factor, y = PCORRES_numeric, color = as.factor(SUBJID), group = visit_id, linetype = VISIT)) +
         geom_line(linewidth = 1) +  # Updated for compatibility with ggplot2 v3.4.0
         geom_point(size = 3) +
@@ -224,7 +224,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
           linetype = "Visit"
         )
       
-      # Apply the chosen theme based on user input
+      # Applying the chosen theme based on user input
       ggplot_obj <- switch(input$theme_choice,
                            theme_minimal = ggplot_obj + theme_minimal(),
                            theme_classic = ggplot_obj + theme_classic(),
@@ -234,7 +234,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
                            theme_void = ggplot_obj + theme_void(),
                            theme_gray = ggplot_obj + theme_gray())
       
-      # Convert ggplot object to plotly and register the click event
+      # Converting ggplot object to plotly and register the click event
       p <- ggplotly(ggplot_obj, source = "select") %>%
         layout(dragmode = "select")
       event_register(p, "plotly_click")  # Register plotly click event
@@ -242,7 +242,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       p
     })
     
-    # Initially render an empty data table
+    # Initially rendering an empty data table
     output$data_table <- renderDT({
       datatable(
         data.frame(Message = "Please select a point on the plot to see details."),
@@ -251,7 +251,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       )
     })
     
-    # Observe the click event on the plotly plot
+    
     observeEvent(event_data("plotly_click", source = "select"), {
       selected_data <- event_data("plotly_click", source = "select")
       
