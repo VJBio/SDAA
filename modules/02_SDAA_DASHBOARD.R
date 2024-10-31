@@ -97,9 +97,9 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       req(filtered_data(), uploadedData$data1())
       FLT <- filtered_data()
       
-      # Convert PCORRES to numeric, handling "<" values by assuming 0.3 when PCORRES == "<0.400"
+      # Convert PCORRES to numeric,
       FLT <- FLT %>%
-        mutate(PCORRES = as.numeric(ifelse(grepl("^<", PCORRES), 0.3, as.numeric(PCORRES))))
+        mutate(PCORRES = as.numeric(ifelse(grepl("^<", PCORRES), 0.4, as.numeric(PCORRES))))
       
       # Convert ULOQ and LLOQ to numeric (removing units)
       normal_values_numeric <- uploadedData$data1() %>%
