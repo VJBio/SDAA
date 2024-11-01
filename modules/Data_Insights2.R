@@ -141,7 +141,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
     
     # Rendering the filtered data table with highlighting for abnormal values
     output$filtered_data_table <- renderDT({
-      req(processed_data())  # Ensure processed data is available
+      req(processed_data())  # Ensuring processed data is available
       
       df <- processed_data()
       

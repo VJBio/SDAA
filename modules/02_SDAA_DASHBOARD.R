@@ -223,7 +223,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
     output$Total_Abnormalities <- renderValueBox({
       req(uploadedData$THdata(), uploadedData$data1())
       
-      # Join data to get LLOQ and ULOQ values
+      # Joining data to get LLOQ and ULOQ values
       FLT <- uploadedData$THdata()
       
       # Convert PCORRES to numeric, handling "<" values by assuming 0.3 when PCORRES == "<0.400"

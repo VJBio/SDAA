@@ -23,7 +23,7 @@ ui <- bs4DashPage(
     disable = FALSE,
     fixed = TRUE,
     skin = "light",
-    # Add custom CSS to style the sidebar
+    # custom CSS to style the sidebar
     tags$style(
       HTML("
         .main-sidebar {
@@ -70,7 +70,7 @@ ui <- bs4DashPage(
   
   # Body
   body = bs4DashBody(
-    # Include custom CSS file
+    # custom CSS file
     includeCSS("www/pdash.css"),
     
     bs4TabItems(
