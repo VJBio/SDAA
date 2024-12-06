@@ -5,6 +5,7 @@
 # renv::load()
 
 library(shiny)
+library(shinyauthr)
 library(bs4Dash)
 library(shinyFiles)
 library(stringr)

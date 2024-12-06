@@ -77,20 +77,20 @@ Data_Insights_server_2 <- function(id, uploadedData) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     
-    # Reactive dataset to load THdata and data1
+    # Reactive dataset to load  and data1
     data <- reactive({
       req(uploadedData$THdata(), uploadedData$data1())  
       
       
       df <- uploadedData$THdata()
       normal_values <- uploadedData$data1()
-      
+      ##########################################################################
       # Debugging: Print summaries of both datasets to ensure they are loaded
-      cat("THdata Summary:\n")
-      print(head(df))
-      cat("Normal Values Summary:\n")
-      print(head(normal_values))
-      
+      #cat("THdata Summary:\n")
+      #print(head(df))
+      #cat("Normal Values Summary:\n")
+      #print(head(normal_values))
+      ######################################################################
       return(list(df = df, normal_values = normal_values))
     })
     
@@ -116,7 +116,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
         if (grepl("^<", x)) {
           limit_value <- as.numeric(sub("<", "", x))
-          return(limit_value * 0.75)
+          return(0)
         } else {
           return(as.numeric(x))
         }
@@ -124,12 +124,12 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       
       # Joining with normal_values to bring LLOQ and ULOQ based on VISIT
       df <- df %>%
-        left_join(normal_values %>% select(VISIT, LLOQ, ULOQ), by = "VISIT")
+        left_join(normal_values %>% select(VISIT, Upper_Limit, Lower_Limit), by = "VISIT")
       
       # Add a status column to determine if values are abnormal
       df <- df %>%
         mutate(
-          Status = ifelse(!is.na(LLOQ) & !is.na(ULOQ) & (PCORRES_numeric < LLOQ | PCORRES_numeric > ULOQ), "Abnormal", "Normal")
+          Status = ifelse(!is.na(Lower_Limit) & !is.na(Upper_Limit) & (PCORRES_numeric < Lower_Limit | PCORRES_numeric > Upper_Limit), "Abnormal", "Normal")
         )
       
       # Debugging: Check the status column and LLOQ/ULOQ values

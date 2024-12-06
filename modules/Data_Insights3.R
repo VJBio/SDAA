@@ -91,17 +91,21 @@ Data_Insights_UI_3 <- function(id) {
 Data_Insights_server_3 <- function(id, uploadedData) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
-    
+    #print(ns)
     # Reactive dataset using the uploadedData$THdata()
     data <- reactive({
       req(uploadedData$THdata())  # Ensure THdata is available
       df <- uploadedData$THdata()
       
+
+      #####################
+      #df <-  readxl::read_excel("../VJ/c1071003_pf-06863135_serum_mock_dft_v2.xlsx")
+      #######################
       # Converting concentration to numeric dynamically, handling "<" values
       df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
         if (grepl("^<", x)) {
           limit_value <- as.numeric(sub("<", "", x))
-          return(limit_value * 0.75)
+          return(0)
         } else {
           return(as.numeric(x))
         }
@@ -211,19 +215,28 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       }
       
       # Creating ggplot object with dynamic theme selection
-      ggplot_obj <- ggplot(filtered, aes(x = PCTPT_factor, y = PCORRES_numeric, color = as.factor(SUBJID), group = visit_id, linetype = VISIT)) +
-        geom_line(linewidth = 1) +  # Updated for compatibility with ggplot2 v3.4.0
-        geom_point(size = 3) +
-        scale_y_log10() +  # Log scale for y-axis
-        scale_color_viridis(discrete = TRUE) +  # Use a different color palette for SUBJID (discrete scale)
+      #ggplot_obj <- ggplot(filtered, aes(x = PCTPT_factor, y = PCORRES_numeric, color = as.factor(SUBJID), group = visit_id, linetype = VISIT)) +
+      #  geom_line(linewidth = 1) +  # Updated for compatibility with ggplot2 v3.4.0
+      #  geom_point(size = 3) +
+      #  scale_y_log10() +  # Log scale for y-axis
+      #  scale_color_viridis(discrete = TRUE) +  # Use a different color palette for SUBJID (discrete scale)
+      #  labs(
+      #    x = "Time (Hours)",
+      #    y = "Concentration (ng/mL)",
+      #    title = "Concentration vs Time by Subject and Visit",
+      #   color = "Subject ID",
+      #    linetype = "Visit"
+      #  )
+     ggplot_obj <- ggplot(filtered, aes(x = PCTPT_factor, y = PCORRES_numeric)) +
+        geom_boxplot(aes(fill = PCTPT_factor)) + 
+        facet_wrap(~VISIT , scales = "free_x")+
         labs(
-          x = "Time (Hours)",
-          y = "Concentration (ng/mL)",
-          title = "Concentration vs Time by Subject and Visit",
-          color = "Subject ID",
-          linetype = "Visit"
-        )
-      
+              x = "Time (Hours)",
+              y = "Concentration (ng/mL)",
+              title = "Concentration vs Time by Subject and Visit",
+             color = "Subject ID",
+              linetype = "Visit"
+           )
       # Applying the chosen theme based on user input
       ggplot_obj <- switch(input$theme_choice,
                            theme_minimal = ggplot_obj + theme_minimal(),
@@ -238,25 +251,44 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       p <- ggplotly(ggplot_obj, source = "select") %>%
         layout(dragmode = "select")
       event_register(p, "plotly_click")  # Register plotly click event
-      
-      hline <- function(y = 0, color = "black") {
-        list(
-          type = "line",
-          x0 = 0,
-          x1 = 1,
-          xref = "paper",
-          y0 = y,
-          y1 = y,
-          line = list(color = color)
-        )
-      }
+      p
+      th<- uploadedData$data1()
+      print(th)
+      normal_values <- subset(th , th$STUDYID ==unique(filtered$STUDYID) , )
+      print(normal_values)
+    
       library(plotly)
-      fig <- plot_ly( filtered , y = ~PCORRES_numeric, color = ~PCTPT_factor ,  type = "box")  %>%
-               layout(shapes = list(hline(900 , color="red") ) )  %>%
-                layout(shapes = list(hline(300 , color="red") ) )
+      fig <- plot_ly( filtered ,x=~VISIT , y = ~PCORRES_numeric, color = ~PCTPT_factor , 
+                      type = "box" , boxpoints = "all", jitter = 0.3 )  %>%
+        layout(
+          shapes = list(
+            list(
+              type = "line",
+              x0 = 0,
+              x1 = 1,
+              y0 = normal_values$Upper_Limit,
+              y1 = 900,
+              xref = "paper",
+              line = list(color = "red", width = 2, dash = "dash")
+            ),
+            list(
+              type = "line",
+              x0 = 0,
+              x1 = 1,
+              y0 = normal_values$Lower_Limit,
+              y1 = 0,
+              xref = "paper",
+              line = list(color = "blue", width = 2, dash = "dash")
+            )
+          )
+        )
+      fig <- fig %>%   
+        subplot(nrows = 1, shareX = TRUE, shareY = TRUE)
+
       
-      
-      fig
+      fig <- fig  %>% layout(
+            title = "Concentration vs Time by Subject and Visit")
+      #fig
       
       #p
     })
