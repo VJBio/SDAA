@@ -66,7 +66,9 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
     
     # Updating Study ID dropdown choices when data is available
     observeEvent(uploadedData$THdata(), {
+      
       study_ids <- unique(uploadedData$THdata()$STUDYID)
+      
       updatePickerInput(session, "study_id_select", choices = study_ids)
     })
     
@@ -105,8 +107,8 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       normal_values_numeric <- uploadedData$data1() %>%
         mutate(Upper_Limit = as.numeric(gsub("[^0-9.]", "", Upper_Limit)),  # Extracting numeric part
                Lower_Limit = as.numeric(gsub("[^0-9.]", "", Lower_Limit)))
-      print("data1")
-      print(normal_values_numeric)
+      #print("data1")
+      #print(normal_values_numeric)
       # Join and filter 
       joined_data <- FLT %>%
         left_join(normal_values_numeric, by = c("STUDYID", "TREATXT", "VISIT", "PCTPT")) # Joined by relevant columns
@@ -170,10 +172,10 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       req(filtered_data())
       Fdata <- filtered_data()
       valueBox(
-        elevation = 3,
+        width  = 3,
         value = unique(Fdata$TREATXT),
         subtitle = "Treatment Description",
-        color = "primary",
+        color = "black",
         icon = icon("fa-clipboard"),
         href = NULL
       )
@@ -185,10 +187,10 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       Fdata <- filtered_data()
       
       valueBox(
-        elevation = 3,
+        #elevation = 3,
         value = unique(Fdata$PCCAT),
         subtitle = "Category",
-        color = "primary",
+        color = "black",
         icon = icon("input-numeric")
       )
     })
@@ -198,10 +200,10 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       Fdata <- filtered_data()
       
       valueBox(
-        elevation = 3,
+        #elevation = 3,
         value = unique(Fdata$PCSPEC),
         subtitle = "Biological Matrix",
-        color = "primary",
+        color = "black",
         icon = icon("memo")
       )
     })
@@ -212,10 +214,10 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       Fdata <- filtered_data()
       
       valueBox(
-        elevation = 3,
+        #elevation = 3,
         value = unique(Fdata$PCMETHOD),
         subtitle = "Bioanalytical Method",
-        color = "primary",
+        color = "black",
         icon = icon("memo")
       )
     })
@@ -245,10 +247,10 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       total_abnormalities <- nrow(joined_data)  # Get the count of abnormalities
       
       valueBox(
-        elevation = 3,
+        #elevation = 3,
         value = total_abnormalities,
         subtitle = "Total Abnormalities in Study",
-        color = "danger",
+        color = "red",
         icon = icon("exclamation-triangle"),
         href = NULL
       )
@@ -269,8 +271,8 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       req(uploadedData$THdata())
       Fdata <- uploadedData$THdata()
       
-      print("Fdata")
-      print(Fdata)
+      #print("Fdata")
+      #print(Fdata)
       
       distinct_count <- Fdata %>%
         summarise(USUBJID = n_distinct(SUBJID))

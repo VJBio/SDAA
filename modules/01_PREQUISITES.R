@@ -9,9 +9,7 @@ if (file.exists("Threshold")) {
   th <- dbConnect(SQLite(), "Threshold")
 } else {
   th <- dbConnect(SQLite(), "Threshold")
-  dbCreateTable(th, "STUDYID", c(STUDYID = "TEXT"))
-  dbCreateTable(th,"threshold" , c(STUDYID = "TEXT" ,TREATXT = "TEXT" , VISIT = "TEXT", PCTPT ="TEXT" ,
-                                          Upper_Limit = "FLOAT" ,  Lower_Limit = "FLOAT"  ) )
+ 
 }
 dbDisconnect(th)
 
@@ -86,10 +84,22 @@ box(
 
 # Server Function
 # Server Function (modified)
-PREQUISITES_server <- function(id) {
+PREQUISITES_server <- function(id , credentials) {
   moduleServer(id, function(input, output, session) {
     ns <- NS(id)
-    
+    #credentials<-NS(credentials)
+    # print("credentials------->")
+    # print(credentials()$info)
+    # print("credentials------->")
+    # 
+    observe({ 
+      if(credentials()$user_auth){
+        
+    THdata  <- reactiveValues()
+    data2  <- reactiveValues()
+    data1  <- reactiveValues()
+      }
+    })
     w <- Waiter$new(id = ns("waiter"))  # Namespaced waiter ID
     
     read_data <- function(file_input , data_type) {
@@ -128,7 +138,7 @@ PREQUISITES_server <- function(id) {
       #print(data1)
       if(data_type ==1)
       {
-        print(data_type)
+        #print(data_type)
         data <- distinct(data[c("STUDYID")])
         #th <- dbConnect(SQLite(), "Threshold")
         #dbWriteTable( th, "STUDYID" , data2 , append =TRUE)
@@ -137,7 +147,7 @@ PREQUISITES_server <- function(id) {
         
       }else if(data_type ==2)
       {
-        print(data_type)
+        #print(data_type)
         
         data <- distinct( data[c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT" )])
         data$Upper_Limit <-""
@@ -148,27 +158,56 @@ PREQUISITES_server <- function(id) {
         #query= paste0("SELECT * FROM threshold where STUDYID in ", study)
         #res <- dbSendQuery(th,query )
         #print(dbFetch(res))
-        print(dbListTables(th))
+        #print(data,n=4)
+        #print(dbListTables(th))
         if(study %in% dbListTables(th) )
         {
           query= paste0("SELECT * FROM " , study)
           res <- dbSendQuery(th,query )
           data <- dbFetch(res)       
-          }
+        }
+        else{
+          dbWriteTable( th, as.character(study) , data , overwrite  =TRUE)
+          
+        }
         
         dbDisconnect(th)
       }
       return(data)
       
     }
+
     
     THdata <- reactive({ read_data(input$files ,1) })
     data2 <- reactive({ read_data2(input$files , THdata(),1) })
-
+    
     data1 <- reactive({read_data2(input$files ,THdata() ,2) })
     
-    
-
+    observeEvent(input$files, {
+      #audit for upload files
+      
+    })
+      
+      
+    data1 <-  eventReactive(input$files, {
+      #session$reload()
+       # print("upload button ---------->")
+     # print(credentials()$info$user)
+     # print(credentials()$info$sessionid)
+       audit <- dbConnect(SQLite(), "audit")
+       loginaudits<- tibble(user = credentials()$info$user,
+                            sessionid = credentials()$info$sessionid, 
+                            time = as.character(now()),
+                            action = paste("uploaded file Sucess", input$files)  )
+       dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
+       #print(tail(dbReadTable(audit ,"audits"), n=20))
+       dbDisconnect(audit)
+       
+     read_data2(input$files ,THdata() ,2)
+     
+      
+      
+})
     output$dtout <- DT::renderDataTable(datatable(THdata(), 
                                                   options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
                                                   rownames = FALSE))
@@ -187,8 +226,9 @@ PREQUISITES_server <- function(id) {
 
 
 # Module to call server function
-PREQUISITES_module <- function(id) {
-  moduleServer(id, function(input, output, session) {
-    PREQUISITES_server(id)
-  })
+PREQUISITES_module <- function(id, credentials) {
+  PREQUISITES_UI(id)
+  PREQUISITES_server(id , credentials)
+  
+  
 }

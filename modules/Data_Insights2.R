@@ -134,7 +134,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       
       # Debugging: Check the status column and LLOQ/ULOQ values
       cat("Data with Status Column Summary:\n")
-      print(head(df))
+      #print(head(df))
       
       return(df)
     })

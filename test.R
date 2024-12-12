@@ -66,14 +66,19 @@ ui <- dashboardPage(
   # put the shinyauthr logout ui module in here
   dashboardHeader(
     title = "SDAA",
+    #rightUi = userOutput("user"),
     tags$li(class = "dropdown", style = "padding: 8px;", shinyauthr::logoutUI("logout"))
+    #title = "SDAA",
+    #tags$li(class = "dropdown", style = "padding: 8px;", shinyauthr::logoutUI("logout"))
   ),
  
   # setup a sidebar menu to be rendered server-side
+  
+  
+ 
   dashboardSidebar(
     collapsed = TRUE, sidebarMenuOutput("sidebar")
   ),
-  
   
   dashboardBody(
     shinyjs::useShinyjs(),
@@ -81,14 +86,50 @@ ui <- dashboardPage(
     # put the shinyauthr login ui module here
     #shinyauthr::loginUI("login"),
     shinyauthr::loginUI(id = "login", cookie_expiry = cookie_expiry),
+    #includeCSS("www/pdash.css"),
+    # tabItems(
+    #   tabItem("Tab1", uiOutput("tab1_ui")),
+    #   tabItem("Tab2", uiOutput("tab2_ui"))
+    # )
     
-    mainPanel(fluidRow(htmlOutput("frame")
+    tabItems(
+      tabItem(
+        tabName = "Tab1",
+        PREQUISITES_UI("PREQUISITES")
+      ),
+      tabItem(
+        tabName = "TabTH",
+        EditTable_UI("Threshold")
+      ),
+      tabItem(
+        tabName = "Tab2",
+        SDAA_DASHBOARD_UI("SDAA_DASHBOARD")
+      ),
+      tabItem(
+        tabName = "Tab3",
+        Data_Insights_UI_2("insights_module_2")
+      ),
+      tabItem(
+        tabName = "Tab4",
+        Data_Insights_UI_3("insights_module_3")
+      ),
+      tabItem(
+        tabName = "Tab5",
+        Data_Insights_UI_4("insights_module_4")
+      ),
+      tabItem(
+        tabName = "Tab6",
+        Data_Insights_UI_5("insights_module_5")
+      )
+    )
+    
+   # mainPanel(fluidRow(htmlOutput("frame")
    
-                            
-  )
+  )                           
+  
 )
-)
-)
+
+
 server <- function(input, output, session) {
   
   # login status and info will be managed by shinyauthr module and stores here
@@ -123,10 +164,49 @@ server <- function(input, output, session) {
   # login audit
 
   # #dbReadTable(audit ,"audits")
+  observe({
+    if(credentials()$user_auth) {
+      shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
+    } else {
+      shinyjs::addClass(selector = "body", class = "sidebar-collapse")
+    }
+  })
+  
+  output$sidebar <- renderMenu({
+    req(credentials()$user_auth)
+    sidebarMenu(
+      id = "tabs",
+      menuItem("PREQUISITES", tabName = "Tab1" ,icon = icon("clipboard") ),
+      menuItem("Threshold", tabName = "TabTH" , icon = icon("edit")),
+      menuItem("SDAA DASHBOARD", tabName = "Tab2" , icon = icon("chart-bar")),
+      menuItem("SD LISTING", tabName = "Tab3" ,icon = icon("list")),
+      menuItem("VISUAL & DATA TABLE", tabName = "Tab4" ,icon = icon("table")),
+      menuItem("HELP", tabName = "Tab5", icon = icon("info-circle")),
+      menuItem("VERSION HISTORY", tabName = "Tab6", icon = icon("history"))
+    )
+  })
+  
+  # output$tab2_ui <- renderUI({
+  #   req(credentials()$user_auth)
+  #   uploadedData <- PREQUISITES_server("PREQUISITES") 
+  # })
+  
   
   observe({ 
     if(credentials()$user_auth){
-    urlSDAA <<- paste0("https://rsc.pfizer.com/SDAA")
+    #urlSDAA <<- paste0("https://rsc.pfizer.com/SDAA")
+    uploadedData <- PREQUISITES_server("PREQUISITES")  
+    
+    # print("Reactive Data")
+    # print(head(uploadedData, 10))
+    # 
+    # # Calling the Data Insights Module and passing the reactive data correctly
+     EditTable_module("Threshold",uploadedData)
+     SDAA_DASHBOARD_module("SDAA_DASHBOARD", uploadedData)
+     Data_Insights_module_2("insights_module_2", uploadedData)
+     Data_Insights_module_3("insights_module_3", uploadedData)
+     Data_Insights_module_4("insights_module_4", uploadedData)
+     Data_Insights_module_5("insights_module_5", uploadedData)
     }
     else{
       audit <- dbConnect(SQLite(), "audit")
@@ -143,10 +223,12 @@ server <- function(input, output, session) {
   output$frame <- renderUI({
     req(credentials()$user_auth)
     
-    my_test <- tags$iframe(src=urlSDAA,  style='width:100vw;height:100vh;')
+    #my_test <- tags$iframe(src=urlSDAA,  style='width:100vw;height:100vh;')
     #print(my_test)
-    my_test
+    #my_test
   })
+    
+  
 }
 
 shiny::shinyApp(ui, server)

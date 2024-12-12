@@ -253,9 +253,9 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       event_register(p, "plotly_click")  # Register plotly click event
       p
       th<- uploadedData$data1()
-      print(th)
+      #print(th)
       normal_values <- subset(th , th$STUDYID ==unique(filtered$STUDYID) , )
-      print(normal_values)
+      #print(normal_values)
     
       library(plotly)
       fig <- plot_ly( filtered ,x=~VISIT , y = ~PCORRES_numeric, color = ~PCTPT_factor , 
