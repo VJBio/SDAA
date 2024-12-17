@@ -21,8 +21,9 @@ PREQUISITES_UI <- function(id) {
   tabPanel(
     "",
     value = "Tab1",
-    fluidRow(
-      column(3, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".xlsx"))
+    box(
+      width = 12,
+      column(12, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".xlsx"))
       
       #column(3, fileInput(ns("files1"), "Upload Clin Pharma Lead Normal Values", accept = ".xlsx")),
       
@@ -30,53 +31,53 @@ PREQUISITES_UI <- function(id) {
     ),
    
     
-    fluidRow(
-     
-       box(
-         title = "SDAA DATA",
-         closable = FALSE,
-         width = 12,
-         status = "warning",
-         solidHeader = FALSE,
-         collapsible = TRUE,
-         fluidRow(
-           column(12,
-                  align = "center",
-                  DT::dataTableOutput(ns("dtout")) %>% withSpinner(color = "#0095FF")
-           )
-         )
-       ),
-      
-       box(
-         title = "Clin Pharma Lead Normal Values",
-         closable = FALSE,
-         width = 12,
-         status = "warning",
-         solidHeader = FALSE,
-         collapsible = TRUE,
-         fluidRow(
-           column(12,
-                  align = "center",
-                  DT::dataTableOutput(ns("dtout1")) %>% withSpinner(color = "#0095FF")
-           )
-         )
-       ),
-
-box(
-  title = "Treatment Codes File",
-  closable = FALSE,
-  width = 12,
-  status = "warning",
-  solidHeader = FALSE,
-  collapsible = TRUE,
-  fluidRow(
-    column(12,
-           align = "center",
-           DT::dataTableOutput(ns("dtout2")) %>% withSpinner(color = "#0095FF")
-    )
-  )
-)
-    )
+#     fluidRow(
+#      
+#        box(
+#          title = "SDAA DATA",
+#          closable = FALSE,
+#          width = 12,
+#          status = "warning",
+#          solidHeader = FALSE,
+#          collapsible = TRUE,
+#          fluidRow(
+#            column(12,
+#                   align = "center",
+#                   DT::dataTableOutput(ns("dtout")) %>% withSpinner(color = "#0095FF")
+#            )
+#          )
+#        ),
+#       
+#        box(
+#          title = "Clin Pharma Lead Normal Values",
+#          closable = FALSE,
+#          width = 12,
+#          status = "warning",
+#          solidHeader = FALSE,
+#          collapsible = TRUE,
+#          fluidRow(
+#            column(12,
+#                   align = "center",
+#                   DT::dataTableOutput(ns("dtout1")) %>% withSpinner(color = "#0095FF")
+#            )
+#          )
+#        ),
+# 
+# box(
+#   title = "Treatment Codes File",
+#   closable = FALSE,
+#   width = 12,
+#   status = "warning",
+#   solidHeader = FALSE,
+#   collapsible = TRUE,
+#   fluidRow(
+#     column(12,
+#            align = "center",
+#            DT::dataTableOutput(ns("dtout2")) %>% withSpinner(color = "#0095FF")
+#     )
+#   )
+# )
+#    )
   )
 }
 
@@ -208,17 +209,17 @@ PREQUISITES_server <- function(id , credentials) {
       
       
 })
-    output$dtout <- DT::renderDataTable(datatable(THdata(), 
-                                                  options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
-                                                  rownames = FALSE))
-    
-    output$dtout1 <- DT::renderDataTable(datatable(data1(), 
-                                                   options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
-                                                   rownames = FALSE))
-    
-    output$dtout2 <- DT::renderDataTable(datatable(data2(), 
-                                                   options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
-                                                   rownames = FALSE))
+    # output$dtout <- DT::renderDataTable(datatable(THdata(), 
+    #                                               options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
+    #                                               rownames = FALSE))
+    # 
+    # output$dtout1 <- DT::renderDataTable(datatable(data1(), 
+    #                                                options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
+    #                                                rownames = FALSE))
+    # 
+    # output$dtout2 <- DT::renderDataTable(datatable(data2(), 
+    #                                                options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
+    #                                                rownames = FALSE))
     
     return(list(THdata = THdata, data1 = data1, data2 = data2))
   })

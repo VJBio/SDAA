@@ -134,6 +134,7 @@ server <- function(input, output, session) {
     #print(log_out)
     sidebarMenu(
       id = "tabs",
+      menuItem("AbnormalStatus", tabName = "abnorm" ,icon = icon("circle-info") ),
       menuItem("PREQUISITES", tabName = "Tab1" ,icon = icon("clipboard") ),
       menuItem("Threshold", tabName = "TabTH" , icon = icon("edit")),
       menuItem("SDAA DASHBOARD", tabName = "Tab2" , icon = icon("chart-bar")),
@@ -150,6 +151,7 @@ server <- function(input, output, session) {
     if(credentials()$user_auth){
       #urlSDAA <<- paste0("https://rsc.pfizer.com/SDAA")
       #uploadedData()<-NULL
+      autouploader_module("AbnormalStatus",uploadedData,credentials)
       uploadedData <-PREQUISITES_server("PREQUISITES" , credentials) 
       print(uploadedData)
       # # Calling the Data Insights Module and passing the reactive data correctly

@@ -18,8 +18,8 @@ ui <- dashboardPage(
   # Body setup, initially visible
   dashboardBody(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
-   # shinyjs::useShinyjs(),
-    includeCSS("www/pdash.css"),
+    shinyjs::useShinyjs(),
+   # includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 1),
     #appResetButton('appResetId'),
@@ -27,10 +27,11 @@ ui <- dashboardPage(
     #includeCSS("www/pdash.css"),
     mainPanel(
       id = "mainPanel",
-      width=9,
-     # includeCSS("www/pdash.css"),
-      
+      width=12,
+      #align = "right",
+      #includeCSS("www/pdash.css"),
       tabItems(
+        tabItem(tabName = "abnorm", autouploader_UI("AbnormalStatus")),
         tabItem(tabName = "Tab1", PREQUISITES_UI("PREQUISITES")),
         tabItem(tabName = "TabTH", EditTable_UI("Threshold")),
         tabItem(tabName = "Tab2", SDAA_DASHBOARD_UI("SDAA_DASHBOARD")),

@@ -6,6 +6,20 @@ Data_Insights_UI_5 <- function(id){
     "Load Data",
     value = "Tab6",
     
+    fluidRow(
+      column(
+        width = 12,
+        h3("Version 1 : 16-12-2024", style = "text-align;"),
+        p("Welcome to the SDAA Dashboard!"),
+        p("- Key Features.", style = "text-align:left;"),
+        tags$ul(
+          style = "margin-left: 0; padding-left: 0; text-align: left;",
+          tags$li("Click on the \"Upload SDAA Excel File\" button to load the primary dataset."),
+  tags$li("Use the \"Upload Clin Pharma Lead Normal Values\" button to add reference data for validation."),
+  tags$li("\"Upload Treatment Codes\" helps to align data analysis with the corresponding treatment codes.")
+  )
+      ))
+    
     # fluidRow(
     #   valueBoxOutput(ns("STUDYID")),  # Using ns() for modular ID scoping
     #   valueBoxOutput(ns("AVG_PCL_Value")),

@@ -1,7 +1,7 @@
 
 source("modules/packages.R")
 #source("modules/mainUI.R")
-
+source("modules/Autouploader.R")
 #source("modules/Login.R")
 source("modules/01_PREQUISITES.R")
 source("modules/EditTable.R")

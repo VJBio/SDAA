@@ -17,6 +17,7 @@ EditTable_UI <- function(id) {
           wellPanel(
         #h3("Update threshold"),
         #br(),
+            width=8,
             pickerInput(ns("study_id_select_th"), "Select Study ID", 
                         choices = NULL, options = list(`live-search` = TRUE)),
             actionButton(ns("update_table"), label = "Show table", style = "fill"),
@@ -57,16 +58,16 @@ EditTable_server <- function(id, uploadedData, credentials) {
       
       uploadedData$data1 <- eventReactive(input$update_table, { 
        # print("inside select--------------->")
-         th <- dbConnect(SQLite(), "Threshold")
-         study_id <- dbListTables(th)
+         thedit <- dbConnect(SQLite(), "Threshold")
+         study_id <- dbListTables(thedit)
          updatePickerInput(session, "study_id_select_th", choices = study_id)
          
-         query= paste("SELECT * FROM " , input$study_id_select_th)
+         query= paste0("SELECT * FROM " , "'",input$study_id_select_th,"'")
          #print(query)
-         res <- dbSendQuery(th,query )
+         res <- dbSendQuery(thedit,query )
          DF <- dbFetch(res)
          #print(head(DF))
-         dbDisconnect(th)
+         dbDisconnect(thedit)
          DF
       })
       
