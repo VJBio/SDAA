@@ -165,7 +165,8 @@ PREQUISITES_server <- function(id , credentials) {
         {
           query= paste0("SELECT * FROM " , study)
           res <- dbSendQuery(th,query )
-          data <- dbFetch(res)       
+          data <- dbFetch(res) 
+          dbClearResult(res)
         }
         else{
           dbWriteTable( th, as.character(study) , data , overwrite  =TRUE)

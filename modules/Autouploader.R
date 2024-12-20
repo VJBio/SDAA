@@ -42,7 +42,7 @@ autouploader_UI <- function(id) {
                 fluidRow(
                   column(12,
                          align = "center",
-                         DT::dataTableOutput(ns("stats")) %>% withSpinner(color = "#0095FF")
+                         DT::DTOutput(ns("stats")) %>% withSpinner(color = "#0095FF")
                   )
                 )
               )
@@ -69,24 +69,32 @@ dbDisconnect(abnorm)
 
 observeEvent(input$scan, {
   
-list_of_files <- list.files(path = "/home/jhav11/ARD",
+  
+  abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
+  if(dbExistsTable(abnormalcon, "abnormalstatus") )
+  {
+   dbRemoveTable(abnormalcon, "abnormalstatus")
+  }
+  path = "/home/jhav11/VJ"
+  path="Data"
+list_of_files <- list.files(path = path,
                             recursive = TRUE,
                             pattern = "\\.csv$",
                             full.names = TRUE)
 
 
-validcol<-c("STUDY" ,"PKTERM" , "VISIT", "PERIOD", "PKCNC" )
-
+validcol<-c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT", "PCORRES" )
+#print(list_of_files)
 for(file in list_of_files)
 {
+  
   df<-read.csv(file)
   if(length(intersect(validcol , colnames(df))) ==5)
   {
 
-    data <- distinct( df[c("STUDY" ,"TREATXT" , "VISIT", "PERIOD" )])
-    colnames(data) <-c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT" )
-    data$Lower_Limit <-""
-    data$Upper_Limit <-""
+    data <- distinct( df[c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT" )])
+    #colnames(data) <-c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT" )
+   
    
     study <- distinct(data[c("STUDYID")])
     #PKTERM <- distinct(data[c("PKTERM")])
@@ -98,32 +106,40 @@ for(file in list_of_files)
       query= paste0("SELECT * FROM " , "'",study,"'")
       res <- dbSendQuery(th,query )
       data <- dbFetch(res)  
-      print("from DB-------->")
+     # print("from DB-------->")
      # print(data)
-      merge.df <- merge(df,data, by.x=c("STUDY" ,"TREATXT" , "VISIT", "PERIOD" ) , 
-           by.y=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT" ))
-      #print(merge.df)
-      data.num <- as.numeric(merge.df$PKCNC)
+      merge.df <- merge(df,data, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") )
+      #print(head(merge.df))
+      data.num <- as.numeric(merge.df$PCORRES)
       data.num[is.na(data.num)] <- 0
-      merge.df$PKCNC <- data.num
+      merge.df$PCORRES <- data.num
+      merge.df$Lower_Limit<-as.numeric(merge.df$Lower_Limit)
+      merge.df$Upper_Limit<-as.numeric(merge.df$Upper_Limit)
+      
       abnormal=0
       for(i in 1:dim(merge.df)[1])
       {
-        if(merge.df[i, c("PKCNC")] < merge.df[i, c("Lower_Limit")] ||
-           merge.df[i, c("PKCNC")] > merge.df[i, c("Upper_Limit")] )
+        if(is.na(merge.df[i, c("Lower_Limit")])  & is.na(merge.df[i, c("Upper_Limit")]) )
+       {
+          abnormal=abnormal+1
+        }
+        else{
+          if( (merge.df[i, c("PCORRES")] < merge.df[i, c("Lower_Limit")])  |
+           (merge.df[i, c("PCORRES")] > merge.df[i, c("Upper_Limit")]) )
         {
           abnormal=abnormal+1
-          #print(merge.df[i,c("PKCNC", "Lower_Limit" , "Upper_Limit")])
+          #print(merge.df[i,c("PCORRES", "Lower_Limit" , "Upper_Limit")])
+        }
         }
       }
-      print(file)
-      print(dim(merge.df)[1])
-      print(abnormal)
+      #print(file)
+      #print(dim(merge.df)[1])
+      #print(abnormal)
       
       abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
       abnormalstatus<- tibble(file = basename(file),
                            Total =dim(merge.df)[1], 
-                           abnormal =abnormal,
+                           abnormal =dim(merge.df)[1] - abnormal,
                            time = as.character(now()),
                            action = paste("autoscan file Sucess")  )
       dbWriteTable( abnormalcon, "AbnormalStatus" , abnormalstatus , append =TRUE)
@@ -132,7 +148,18 @@ for(file in list_of_files)
       
     }
     else{
+      data$Lower_Limit <-""
+      data$Upper_Limit <-""
       dbWriteTable( th, as.character(study) , data , overwrite  =TRUE)
+      abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
+      abnormalstatus<- tibble(file = basename(file),
+                              Total =dim(data)[1], 
+                              abnormal =0,
+                              time = as.character(now()),
+                              action = paste("autoscan file Sucess")  )
+      dbWriteTable( abnormalcon, "AbnormalStatus" , abnormalstatus , append =TRUE)
+      #print(dbReadTable(abnormalcon  ,"AbnormalStatus"))
+      dbDisconnect(abnormalcon)
       
     }
     
@@ -140,15 +167,31 @@ for(file in list_of_files)
   }
 }
 
+
+audit <- dbConnect(SQLite(), "audit")
+loginaudits<- tibble(user = credentials()$info$user,
+                     sessionid = credentials()$info$sessionid, 
+                     time = as.character(now()),
+                     action = paste("scan file Sucess")  )
+dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
+#print(tail(dbReadTable(audit ,"audits"), n=20))
+dbDisconnect(audit)
+
+abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
+abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
+dbDisconnect(abnormalcon)
+output$stats <- DT::renderDT(DT::datatable(abdata, 
+                                           options = list(scrollX = TRUE)))
+
+
 })
 
 observeEvent(input$show, {
 abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
 abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
-output$stats <- DT::renderDataTable(abdata, 
-             options = list(dom = 't', scroller = TRUE, scrollX = TRUE,
-              "pageLength" = 100), rownames = TRUE)
+output$stats <- DT::renderDT(DT::datatable(abdata, 
+                          options = list(scrollX = TRUE)))
 
 })
 

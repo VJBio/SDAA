@@ -67,6 +67,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
          res <- dbSendQuery(thedit,query )
          DF <- dbFetch(res)
          #print(head(DF))
+         dbClearResult(res)
          dbDisconnect(thedit)
          DF
       })
