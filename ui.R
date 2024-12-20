@@ -21,7 +21,7 @@ ui <- dashboardPage(
     shinyjs::useShinyjs(),
    # includeCSS("www/pdash.css"),
     
-    shinyauthr::loginUI(id = "login", cookie_expiry = 1),
+    shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
     #appResetButton('appResetId'),
     
     #includeCSS("www/pdash.css"),

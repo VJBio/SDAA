@@ -23,7 +23,7 @@ PREQUISITES_UI <- function(id) {
     value = "Tab1",
     box(
       width = 12,
-      column(12, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".xlsx"))
+      column(12, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".csv"))
       
       #column(3, fileInput(ns("files1"), "Upload Clin Pharma Lead Normal Values", accept = ".xlsx")),
       
@@ -108,10 +108,11 @@ PREQUISITES_server <- function(id , credentials) {
       #####################
       # audit log for file input
       ####################
-      if (str_sub(file_input$name, -4) == "xlsx") {
+      if (str_sub(file_input$name, -3) == "csv") {
         w$show()
         tryCatch({
-          data <- readxl::read_excel(file_input$datapath)
+          #data <- readxl::read_excel(file_input$datapath)
+          data <- read.csv(file_input$datapath)
           w$hide()
           
           

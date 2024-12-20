@@ -36,7 +36,7 @@ SDAA_DASHBOARD_UI <- function(id){
       box(
         title = "Total Records in Data",
         closable = FALSE,
-        width = 5,
+        width = 3,
         status = "warning",
         solidHeader = FALSE,
         collapsible = TRUE,
@@ -100,19 +100,20 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       FLT <- filtered_data()
       
       # Convert PCORRES to numeric,
-      FLT <- FLT %>%
-        mutate(PCORRES = as.numeric(ifelse(grepl("^<", PCORRES), 0, as.numeric(PCORRES))))
+      data.num <- as.numeric(FLT$PCORRES)
+      data.num[is.na(data.num)] <- 0
+      FLT$PCORRES <- data.num
+      
       
       # Convert ULOQ and LLOQ to numeric (removing units)
-      normal_values_numeric <- uploadedData$data1() %>%
-        mutate(Upper_Limit = as.numeric(gsub("[^0-9.]", "", Upper_Limit)),  # Extracting numeric part
-               Lower_Limit = as.numeric(gsub("[^0-9.]", "", Lower_Limit)))
+      normal_values_numeric <- uploadedData$data1()
+      normal_values_numeric$Lower_Limit <- as.numeric(normal_values_numeric$Lower_Limit)
+      normal_values_numeric$Upper_Limit <- as.numeric(normal_values_numeric$Upper_Limit)
+      
       #print("data1")
       #print(normal_values_numeric)
       # Join and filter 
-      joined_data <- FLT %>%
-        left_join(normal_values_numeric, by = c("STUDYID", "TREATXT", "VISIT", "PCTPT")) # Joined by relevant columns
-      
+      joined_data <- merge(FLT ,normal_values_numeric, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") ) 
       
       return(joined_data)
     })
@@ -138,7 +139,10 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       plot_df <- plot_data()
       
       plot_df <- plot_df %>%
-        mutate(Status = ifelse(PCORRES >= Lower_Limit & PCORRES <= Upper_Limit, "Normal", "Abnormal"))
+        mutate(
+          
+          Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
+        )
       
       fig <- plot_ly(
         data = plot_df,
@@ -149,7 +153,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         color = ~Status,  
         colors = c("Normal" = "blue", "Abnormal" = "red"),  
         symbol = ~Status,  
-        symbols = c("Normal" = "circle", "Abnormal" = "x"),  
+        symbols = c("Normal" = "circle", "Abnormal" = "cross"),  
         marker = list(
           size = ~ifelse(Status == "Abnormal", 12, 8)  
         ),
@@ -176,7 +180,6 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         value = unique(Fdata$TREATXT),
         subtitle = "Treatment Description",
         color = "black",
-        icon = icon("fa-clipboard"),
         href = NULL
       )
     })
@@ -190,8 +193,8 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         #elevation = 3,
         value = unique(Fdata$PCCAT),
         subtitle = "Category",
-        color = "black",
-        icon = icon("input-numeric")
+        color = "black"
+       
       )
     })
     
@@ -203,8 +206,8 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         #elevation = 3,
         value = unique(Fdata$PCSPEC),
         subtitle = "Biological Matrix",
-        color = "black",
-        icon = icon("memo")
+        color = "black"
+        
       )
     })
     
@@ -217,8 +220,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         #elevation = 3,
         value = unique(Fdata$PCMETHOD),
         subtitle = "Bioanalytical Method",
-        color = "black",
-        icon = icon("memo")
+        color = "black"
       )
     })
     
@@ -229,23 +231,25 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       # Joining data to get LLOQ and ULOQ values
       FLT <- uploadedData$THdata()
       
-      # Convert PCORRES to numeric, handling "<" values by assuming 0.3 when PCORRES == "<0.400"
-      FLT <- FLT %>%
-        mutate(PCORRES = as.numeric(ifelse(grepl("^<", PCORRES), 0, as.numeric(PCORRES))))
-      FLT
+    
+      data.num <- as.numeric(FLT$PCORRES)
+      data.num[is.na(data.num)] <- 0
+      FLT$PCORRES <- data.num
+      
       # Convert ULOQ and LLOQ to numeric (removing units)
-      normal_values_numeric <- uploadedData$data1() %>%
-        mutate(Upper_Limit = as.numeric(gsub("[^0-9.]", "", Upper_Limit)),  # Extract numeric part
-               Lower_Limit = as.numeric(gsub("[^0-9.]", "", Lower_Limit)))
-      ##print("data1")
-      ##print(normal_values_numeric)
-      # Join and filter to get abnormal values (Adjusted join and filter logic)
-      joined_data <- FLT %>%
-        left_join(normal_values_numeric, by = c("STUDYID", "TREATXT", "VISIT" ,"PCTPT")) %>%
-        filter(PCORRES < Lower_Limit | PCORRES > Upper_Limit)  # Filtering to get only abnormal values
+      normal_values_numeric <- uploadedData$data1()
+      normal_values_numeric$Lower_Limit <- as.numeric(normal_values_numeric$Lower_Limit)
+      normal_values_numeric$Upper_Limit <- as.numeric(normal_values_numeric$Upper_Limit)
       
-      total_abnormalities <- nrow(joined_data)  # Get the count of abnormalities
+       joined_data <- merge(FLT ,normal_values_numeric, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") )
       
+       #write.table(as.data.frame(joined_data[c("PCORRES", "Lower_Limit", "Upper_Limit")]), file="ab.txt",sep="\t")
+      joined_data <- joined_data %>%
+        mutate(
+          Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
+        )
+       total_abnormalities <- sum(joined_data$Status =="Abnormal")  # Get the count of abnormalities
+       #print(joined_data$Status)
       valueBox(
         #elevation = 3,
         value = total_abnormalities,

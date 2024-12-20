@@ -112,19 +112,25 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       df <- data()$df
       normal_values <- data()$normal_values
       
-      # Converting PCORRES to numeric (handling "<" values)
-      df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
-        if (grepl("^<", x)) {
-          limit_value <- as.numeric(sub("<", "", x))
-          return(0)
-        } else {
-          return(as.numeric(x))
-        }
-      })
+    
+      
+      data.num <- as.numeric(df$PCORRES)
+      data.num[is.na(data.num)] <- 0
+      df$PCORRES_numeric <- data.num
+      df$PCORRES<- data.num
+      # Convert ULOQ and LLOQ to numeric (removing units)
+      
+      normal_values$Lower_Limit <- as.numeric(normal_values$Lower_Limit)
+      normal_values$Upper_Limit <- as.numeric(normal_values$Upper_Limit)
+      
+      
       
       # Joining with normal_values to bring LLOQ and ULOQ based on VISIT
-      df <- df %>%
-        left_join(normal_values %>% select(VISIT, Upper_Limit, Lower_Limit), by = "VISIT")
+      # df <- df %>%
+      #   left_join(normal_values %>% select(VISIT, Upper_Limit, Lower_Limit), by = "VISIT")
+      # df$Upper_Limit <-as.numeric(df$Upper_Limit)
+      # df$Lower_Limit <-as.numeric(df$Lower_Limit)
+      df <- merge(df ,normal_values, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") )
       
       # Add a status column to determine if values are abnormal
       df <- df %>%
@@ -133,7 +139,7 @@ Data_Insights_server_2 <- function(id, uploadedData) {
         )
       
       # Debugging: Check the status column and LLOQ/ULOQ values
-      cat("Data with Status Column Summary:\n")
+      #cat("Data with Status Column Summary:\n")
       #print(head(df))
       
       return(df)

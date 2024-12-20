@@ -67,6 +67,9 @@ if (file.exists("AbnormalStatus")) {
 }
 dbDisconnect(abnorm)
 
+
+
+
 observeEvent(input$scan, {
   
   
@@ -106,6 +109,8 @@ for(file in list_of_files)
       query= paste0("SELECT * FROM " , "'",study,"'")
       res <- dbSendQuery(th,query )
       data <- dbFetch(res)  
+      dbClearResult(res)
+      
      # print("from DB-------->")
      # print(data)
       merge.df <- merge(df,data, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") )
@@ -116,30 +121,21 @@ for(file in list_of_files)
       merge.df$Lower_Limit<-as.numeric(merge.df$Lower_Limit)
       merge.df$Upper_Limit<-as.numeric(merge.df$Upper_Limit)
       
-      abnormal=0
-      for(i in 1:dim(merge.df)[1])
-      {
-        if(is.na(merge.df[i, c("Lower_Limit")])  & is.na(merge.df[i, c("Upper_Limit")]) )
-       {
-          abnormal=abnormal+1
-        }
-        else{
-          if( (merge.df[i, c("PCORRES")] < merge.df[i, c("Lower_Limit")])  |
-           (merge.df[i, c("PCORRES")] > merge.df[i, c("Upper_Limit")]) )
-        {
-          abnormal=abnormal+1
-          #print(merge.df[i,c("PCORRES", "Lower_Limit" , "Upper_Limit")])
-        }
-        }
-      }
-      #print(file)
-      #print(dim(merge.df)[1])
-      #print(abnormal)
+     
       
+      merge.df <- merge.df %>%
+        mutate(
+          Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
+          #Status = ifelse( (PCORRES_numeric < Lower_Limit | PCORRES_numeric > Upper_Limit), "Abnormal", "Normal")
+          
+        )
+      print(table(merge.df$Status))
+      
+
       abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
       abnormalstatus<- tibble(file = basename(file),
                            Total =dim(merge.df)[1], 
-                           abnormal =dim(merge.df)[1] - abnormal,
+                           abnormal =sum(merge.df$Status =="Abnormal"),
                            time = as.character(now()),
                            action = paste("autoscan file Sucess")  )
       dbWriteTable( abnormalcon, "AbnormalStatus" , abnormalstatus , append =TRUE)
