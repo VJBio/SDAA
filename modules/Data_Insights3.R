@@ -7,7 +7,7 @@ Data_Insights_UI_3 <- function(id) {
     titlePanel("Interactive Graph with Data Table"),
     fluidRow(
       column(
-        width = 3,  # Sidebar occupies 1/4th of the screen
+        width = 2,  # Sidebar occupies 1/4th of the screen
         div(
           id = "filter-panel",
           style = "background-color: #f9f9f9; padding: 10px; border-radius: 5px; max-height: 90vh; overflow-y: auto;",
@@ -50,18 +50,18 @@ Data_Insights_UI_3 <- function(id) {
           ),
           
           # Graph Theme Selector
-          selectInput(ns("theme_choice"), "Choose Graph Theme:",
-                      choices = c("Minimal" = "theme_minimal",
-                                  "Classic" = "theme_classic",
-                                  "Black & White" = "theme_bw",
-                                  "Light" = "theme_light",
-                                  "Dark" = "theme_dark",
-                                  "Void" = "theme_void",
-                                  "Gray" = "theme_gray"))
+          # selectInput(ns("theme_choice"), "Choose Graph Theme:",
+          #             choices = c("Minimal" = "theme_minimal",
+          #                         "Classic" = "theme_classic",
+          #                         "Black & White" = "theme_bw",
+          #                         "Light" = "theme_light",
+          #                         "Dark" = "theme_dark",
+          #                         "Void" = "theme_void",
+          #                         "Gray" = "theme_gray"))
         )
       ),
       column(
-        width = 9,  # Main content occupies 3/4th of the screen
+        width = 10,  # Main content occupies 3/4th of the screen
         fluidRow(
           column(
             width = 12,
@@ -71,17 +71,17 @@ Data_Insights_UI_3 <- function(id) {
               plotlyOutput(ns("interactive_plot"), height = "500px")
             )
           )
-        ),
-        fluidRow(
-          column(
-            width = 12,
-            div(
-              id = "data-table-container",
-              style = "padding: 10px;",
-              DTOutput(ns("data_table"))
-            )
-          )
-        )
+        )#,
+        # fluidRow(
+        #   column(
+        #     width = 12,
+        #     div(
+        #       id = "data-table-container",
+        #       style = "padding: 10px;",
+        #       DTOutput(ns("data_table"))
+        #     )
+        #   )
+        # )
       )
     )
   )
@@ -101,15 +101,10 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       #####################
       #df <-  readxl::read_excel("../VJ/c1071003_pf-06863135_serum_mock_dft_v2.xlsx")
       #######################
-      # Converting concentration to numeric dynamically, handling "<" values
-      df$PCORRES_numeric <- sapply(df$PCORRES, function(x) {
-        if (grepl("^<", x)) {
-          limit_value <- as.numeric(sub("<", "", x))
-          return(0)
-        } else {
-          return(as.numeric(x))
-        }
-      })
+      data.num <- as.numeric(df$PCORRES)
+      data.num[is.na(data.num)] <- 0
+      df$PCORRES_numeric <- data.num
+      
       
       # Converting timepoint to numeric for sorting purposes
       df$time_numeric <- as.numeric(sub(" H", "", df$PCTPT))
@@ -227,69 +222,86 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       #   color = "Subject ID",
       #    linetype = "Visit"
       #  )
-     ggplot_obj <- ggplot(filtered, aes(x = PCTPT_factor, y = PCORRES_numeric)) +
-        geom_boxplot(aes(fill = PCTPT_factor)) + 
-        facet_wrap(~VISIT , scales = "free_x")+
+      
+      data.num <- as.numeric(filtered$PCORRES)
+      data.num[is.na(data.num)] <- 0
+      filtered$PCORRES <- data.num
+      #filtered <-  na.omit(filtered)
+      ggplot_obj <- ggplot(filtered, aes(x = VISIT, y = PCORRES, color=PCTPT)) +
+        geom_boxplot() +
+        geom_point(position = position_jitter(width = 0.2)) +
+        theme_classic() +
+        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1),
+              legend.position = "top",
+              text = element_text(size=8)) +
+        facet_wrap(~PCTPT , scales = "free_x" , nrow=1) +
         labs(
-              x = "Time (Hours)",
-              y = "Concentration (ng/mL)",
-              title = "Concentration vs Time by Subject and Visit",
-             color = "Subject ID",
-              linetype = "Visit"
-           )
+          x = "Time (Hours)",
+          y = "Concentration (ng/mL)",
+          title = "Concentration vs Time by Subject and Visit",
+          
+        ) 
+     ggplotly(ggplot_obj)
+     
+     
+  
+     
+     
       # Applying the chosen theme based on user input
-      ggplot_obj <- switch(input$theme_choice,
-                           theme_minimal = ggplot_obj + theme_minimal(),
-                           theme_classic = ggplot_obj + theme_classic(),
-                           theme_bw = ggplot_obj + theme_bw(),
-                           theme_light = ggplot_obj + theme_light(),
-                           theme_dark = ggplot_obj + theme_dark(),
-                           theme_void = ggplot_obj + theme_void(),
-                           theme_gray = ggplot_obj + theme_gray())
+      # ggplot_obj <- switch(input$theme_choice,
+      #                      theme_minimal = ggplot_obj + theme_minimal(),
+      #                      theme_classic = ggplot_obj + theme_classic(),
+      #                      theme_bw = ggplot_obj + theme_bw(),
+      #                      theme_light = ggplot_obj + theme_light(),
+      #                      theme_dark = ggplot_obj + theme_dark(),
+      #                      theme_void = ggplot_obj + theme_void(),
+      #                      theme_gray = ggplot_obj + theme_gray())
       
       # Converting ggplot object to plotly and register the click event
-      p <- ggplotly(ggplot_obj, source = "select") %>%
-        layout(dragmode = "select")
-      event_register(p, "plotly_click")  # Register plotly click event
-      p
-      th<- uploadedData$data1()
-      #print(th)
-      normal_values <- subset(th , th$STUDYID ==unique(filtered$STUDYID) , )
-      #print(normal_values)
-    
-      library(plotly)
-      fig <- plot_ly( filtered ,x=~VISIT , y = ~PCORRES_numeric, color = ~PCTPT_factor , 
-                      type = "box" , boxpoints = "all", jitter = 0.3 )  %>%
-        layout(
-          shapes = list(
-            list(
-              type = "line",
-              x0 = 0,
-              x1 = 1,
-              y0 = normal_values$Upper_Limit,
-              y1 = 900,
-              xref = "paper",
-              line = list(color = "red", width = 2, dash = "dash")
-            ),
-            list(
-              type = "line",
-              x0 = 0,
-              x1 = 1,
-              y0 = normal_values$Lower_Limit,
-              y1 = 0,
-              xref = "paper",
-              line = list(color = "blue", width = 2, dash = "dash")
-            )
-          )
-        )
-      fig <- fig %>%   
-        subplot(nrows = 1, shareX = TRUE, shareY = TRUE)
-
-      
-      fig <- fig  %>% layout(
-            title = "Concentration vs Time by Subject and Visit")
-      #fig
-      
+     #  p <- ggplotly(ggplot_obj, source = "select") %>%
+     #    layout(dragmode = "select")
+     #  #event_register(p, "plotly_click")  # Register plotly click event
+     #  p
+     #  #th<- uploadedData$data1()
+     #  #print(th)
+     #  #normal_values <- subset(th , th$STUDYID ==unique(filtered$STUDYID) , )
+     #  normal_values <- uploadedData$data1()
+     #  
+     # # print(normal_values)
+     # 
+     #  library(plotly)
+     #  fig <- plot_ly( filtered ,x=~VISIT , y = ~PCORRES_numeric, color = ~PCTPT_factor , 
+     #                  type = "box" , boxpoints = "all", jitter = 0.3 )  %>%
+     #    layout(
+     #      shapes = list(
+     #        list(
+     #          type = "line",
+     #          x0 = 0,
+     #          x1 = 1,
+     #          y0 = 900,
+     #          y1 = 900,
+     #          xref = "paper",
+     #          line = list(color = "red", width = 2, dash = "dash")
+     #        ),
+     #        list(
+     #          type = "line",
+     #          x0 = 0,
+     #          x1 = 1,
+     #          y0 = 5,
+     #          y1 = 5,
+     #          xref = "paper",
+     #          line = list(color = "blue", width = 2, dash = "dash")
+     #        )
+     #      )
+     #    )
+     #  fig <- fig %>%   
+     #    subplot(nrows = 1, shareX = TRUE, shareY = TRUE)
+     # 
+     #  
+     #  fig <- fig  %>% layout(
+     #        title = "Concentration vs Time by Subject and Visit")
+     #  fig
+     #  
       #p
     })
     

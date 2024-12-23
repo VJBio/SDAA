@@ -5,70 +5,70 @@ Data_Insights_UI_2 <- function(id) {
   fluidPage(
     titlePanel("SD Listing with Abnormal Value Highlighting"),
     
-    fluidRow(
+    # fluidRow(
+    #   column(
+    #     width = 3,  # Sidebar panel for filters
+    #     div(
+    #       id = "filter-panel",
+    #       style = "background-color: #f9f9f9; padding: 10px; border-radius: 5px; max-height: 90vh; overflow-y: auto;",
+    #       
+    #       h4("Filters", style = "text-align:center; margin-top: 15px;"),
+    #       
+    #       # Visit Filter
+    #       tags$div(
+    #         h5("Select VISIT:"),
+    #         tags$div(
+    #           style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+    #           checkboxGroupInput(ns("visit_filter"), label = NULL, choices = NULL, selected = NULL)
+    #         )
+    #       ),
+    #       
+    #       # PCTPT Filter
+    #       tags$div(
+    #         h5("Select PCTPT:"),
+    #         tags$div(
+    #           style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+    #           checkboxGroupInput(ns("pctpt_filter"), label = NULL, choices = NULL, selected = NULL)
+    #         )
+    #       ),
+    #       
+    #       # Subject ID Filter
+    #       tags$div(
+    #         h5("Select SUBJECT ID:"),
+    #         tags$div(
+    #           style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+    #           checkboxGroupInput(ns("subjid_filter"), label = NULL, choices = NULL, selected = NULL)
+    #         )
+    #       ),
+    #       
+    #       # PKACOM Filter
+    #       tags$div(
+    #         h5("Select PKACOM:"),
+    #         tags$div(
+    #           style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+    #           checkboxGroupInput(ns("pkacom_filter"), label = NULL, choices = NULL, selected = NULL)
+    #         )
+    #       ),
+    #       
+    #       # PKCOML Filter
+    #       tags$div(
+    #         h5("Select PKCOML:"),
+    #         tags$div(
+    #           style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+    #           checkboxGroupInput(ns("pkcoml_filter"), label = NULL, choices = NULL, selected = NULL)
+    #         )
+    #       )
+    #     )
+    #   ),
       column(
-        width = 3,  # Sidebar panel for filters
-        div(
-          id = "filter-panel",
-          style = "background-color: #f9f9f9; padding: 10px; border-radius: 5px; max-height: 90vh; overflow-y: auto;",
-          
-          h4("Filters", style = "text-align:center; margin-top: 15px;"),
-          
-          # Visit Filter
-          tags$div(
-            h5("Select VISIT:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("visit_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-          
-          # PCTPT Filter
-          tags$div(
-            h5("Select PCTPT:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("pctpt_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-          
-          # Subject ID Filter
-          tags$div(
-            h5("Select SUBJECT ID:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("subjid_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-          
-          # PKACOM Filter
-          tags$div(
-            h5("Select PKACOM:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("pkacom_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-          
-          # PKCOML Filter
-          tags$div(
-            h5("Select PKCOML:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("pkcoml_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          )
-        )
-      ),
-      column(
-        width = 9,  # Main content panel for data table
+        width = 12,  # Main content panel for data table
         div(
           id = "data-table-container",
-          style = "padding: 10px;",
+          #style = "padding: 10px;",
           DTOutput(ns("filtered_data_table"))
         )
       )
-    )
+    #)
   )
 }
 
@@ -150,9 +150,9 @@ Data_Insights_server_2 <- function(id, uploadedData) {
       req(processed_data())  # Ensuring processed data is available
       
       df <- processed_data()
-      
+
       # Rendering the data table with highlighting for abnormalities
-      datatable(df, options = list(pageLength = 10, scrollX = TRUE), rownames = FALSE) %>%
+      datatable(df, options = list( scrollX = TRUE), rownames = FALSE) %>%
         formatStyle(
           columns = names(df),
           target = 'row',
