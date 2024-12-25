@@ -7,13 +7,15 @@ SDAA_DASHBOARD_UI <- function(id){
     value = "Tab2",
     
     fluidRow(
-      column(2, pickerInput(ns("study_id_select"), "Select Study ID", 
-                            choices = NULL, options = list(`live-search` = TRUE))),  # Dropdown for Study ID
+      column(2, pickerInput(ns("study_id_select"), "Study ID", 
+                            choices = NULL, options = list(`live-search` = TRUE))),  
+      # Dropdown for Study ID
       
       column(2, pickerInput(ns("subj_id_select"), "Select Subject ID", 
                             choices = NULL, options = list(`live-search` = TRUE))),
-      
-      column(2, actionBttn(ns("update_plots"), label = "Update Visuals", style = "fill")) # Adding update button
+      #actionButton
+      column(2, actionButton(ns("update_plots"), label = "Update Visuals", style = "fill"))
+      # Adding update button
       
     ),
     

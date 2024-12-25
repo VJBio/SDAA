@@ -57,7 +57,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
    observe( {
       #data<-uploadedData$data1()
      req(uploadedData$THdata())
-     print("here----->")
+     #print("here----->")
       th <- dbConnect(SQLite(), "Threshold")
       study_id <- dbListTables(th)
       #print(study_id)

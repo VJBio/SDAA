@@ -101,6 +101,8 @@ server <- function(input, output, session) {
     if(credentials()$user_auth) {
       shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
       shinyjs::show("mainPanel")
+      shinyjs::show("notifications")
+      
        audit <- dbConnect(SQLite(), "audit")
       # 
        loginaudits<- tibble(user = credentials()$info$user,
@@ -113,6 +115,7 @@ server <- function(input, output, session) {
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
       shinyjs::hide("mainPanel")
+      shinyjs::hide("notifications")
       #uploadedData = reactive(uploadedData)
       audit <- dbConnect(SQLite(), "audit")
       #print(session)

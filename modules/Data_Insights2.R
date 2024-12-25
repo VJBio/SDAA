@@ -3,7 +3,9 @@ Data_Insights_UI_2 <- function(id) {
   ns <- NS(id)
   
   fluidPage(
-    titlePanel("SD Listing with Abnormal Value Highlighting"),
+    titlePanel(
+      paste("SD Listing with Abnormal Value Highlighting"),
+    unique(ns("filtered_data_table")["STUDYID"]) ),
     
     # fluidRow(
     #   column(

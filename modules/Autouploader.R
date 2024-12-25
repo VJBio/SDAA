@@ -41,6 +41,7 @@ autouploader_UI <- function(id) {
                 width = 12,
                 status = "warning",
                 solidHeader = FALSE,
+                
                 collapsible = TRUE,
                 fluidRow(
                   column(12,

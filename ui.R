@@ -1,10 +1,49 @@
 library(shinyjs)
+
+abstatus <-function(arg)
+{
+  #print(arg)
+  abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
+   abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
+   dbDisconnect(abnormalcon)
+   if(arg == "date")
+   {
+     return(unique(as.Date(abdata$time)))
+   }
+   if(arg == "count")
+   {
+     return(sum(abdata$abnormal>0))
+   }
+}
+
+
 ui <- dashboardPage(
  # shinyjs::useShinyjs(),
   # Dashboard header with logout UI
   dashboardHeader(
     title = "SDAA",
+    #h3("SDAA"),
+    tags$li(
+      class = "dropdown",
+      h4("Sensitive Data Abnormality Analyzer (SDAA)"),
+      style = "padding: 5px;"
+       ),
+    
+    dropdownMenu(type = "notifications",
+                 
+                 notificationItem(
+                   text = paste("Auto Scan run sucessfully on ", abstatus("date") ),
+                   icon("truck"),
+                   status = "success"
+                 ),
+                 notificationItem(
+                   text = paste("Files with Abormalties",  abstatus("count") ) ,
+                   icon = icon("exclamation-triangle"),
+                   status = "warning"
+                 )
+    ),
     tags$li(class = "dropdown", style = "padding: 8px;", shinyauthr::logoutUI(id="logout"))
+    
     #div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
     
   ),
@@ -20,13 +59,16 @@ ui <- dashboardPage(
   dashboardBody(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
     shinyjs::useShinyjs(),
+    tags$head(tags$style(HTML('
+         height: 100%;
+      '))),
     #includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
     #appResetButton('appResetId'),
     
     #includeCSS("www/pdash.css"),
-    mainPanel(
+    box(
       id = "mainPanel",
       width=12,
       #align = "right",
