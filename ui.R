@@ -1,5 +1,6 @@
+library(shinyjs)
 ui <- dashboardPage(
-  
+ # shinyjs::useShinyjs(),
   # Dashboard header with logout UI
   dashboardHeader(
     title = "SDAA",
@@ -19,7 +20,7 @@ ui <- dashboardPage(
   dashboardBody(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
     shinyjs::useShinyjs(),
-   # includeCSS("www/pdash.css"),
+    #includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
     #appResetButton('appResetId'),

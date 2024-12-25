@@ -153,8 +153,8 @@ server <- function(input, output, session) {
       #uploadedData()<-NULL
       autouploader_module("AbnormalStatus",uploadedData,credentials)
       uploadedData <-PREQUISITES_server("PREQUISITES" , credentials) 
-      print(uploadedData)
-      # # Calling the Data Insights Module and passing the reactive data correctly
+      #print(uploadedData)
+      ## Calling the Data Insights Module and passing the reactive data correctly
       EditTable_module("Threshold",uploadedData,credentials)
       SDAA_DASHBOARD_module("SDAA_DASHBOARD", uploadedData)
       Data_Insights_module_2("insights_module_2", uploadedData)

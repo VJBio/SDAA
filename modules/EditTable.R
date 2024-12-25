@@ -47,14 +47,26 @@ EditTable_server <- function(id, uploadedData, credentials) {
     ################
     # add logic to hide save button if DF is not defined
     ###############
-   
+    th <- dbConnect(SQLite(), "Threshold")
+    study_id <- dbListTables(th)
+    dbDisconnect(th) 
+    updatePickerInput(session, "study_id_select_th", choices = study_id)
+    
+    
     # Updating Study ID dropdown choices when data is available
-    #observeEvent(uploadedData$THdata(), {
+   observe( {
+      #data<-uploadedData$data1()
+     req(uploadedData$THdata())
+     print("here----->")
       th <- dbConnect(SQLite(), "Threshold")
       study_id <- dbListTables(th)
+      #print(study_id)
+      #print(uploadedData$data2())
+      study_id <- c(study_id , as.character(uploadedData$data2()) )
       dbDisconnect(th)
+      #print(study_id)
       updatePickerInput(session, "study_id_select_th", choices = study_id)
-    #})
+    })
       
       uploadedData$data1 <- eventReactive(input$update_table, { 
        # print("inside select--------------->")
