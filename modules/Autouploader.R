@@ -26,14 +26,17 @@ autouploader_UI <- function(id) {
       #h3("Update threshold"),
       #br(),
       width=8,
-     
-      
+
+
       actionButton(ns("show"), label = "Show Abnormalities", style = "fill"),
       actionButton(ns("scan"), label = "scan Abnormalities", style = "fill")
     ),
     
     box(
-                title = "SDAA ABnormalities scan status",
+                h3("SDAA Abnormalities scan status"),
+                #actionButton(ns("show"), label = "Show Abnormalities", style = "fill"),
+                #actionButton(ns("scan"), label = "scan Abnormalities", style = "fill"),
+                br(),
                 closable = FALSE,
                 width = 12,
                 status = "warning",
@@ -42,7 +45,7 @@ autouploader_UI <- function(id) {
                 fluidRow(
                   column(12,
                          align = "center",
-                         DT::DTOutput(ns("stats")) %>% withSpinner(color = "#0095FF")
+                         DT::DTOutput(ns("stats")) #%>% withSpinner(color = "#0095FF")
                   )
                 )
               )
