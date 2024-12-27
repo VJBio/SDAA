@@ -10,5 +10,5 @@ source("modules/Data_Insights2.R")
 source("modules/Data_Insights3.R")
 source("modules/Data_Insights4.R")
 source("modules/Data_Insights5.R")
-
+source("modules/Admin.R")
 source("modules/Normal_Distribution.R")

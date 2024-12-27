@@ -182,7 +182,19 @@ abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
 output$stats <- DT::renderDT(DT::datatable(abdata, 
                                            options = list(scrollX = TRUE)))
+from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
 
+message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
+icons<-c("truck" , "exclamation-triangle")
+messageData =  data.frame(from , message,icons)
+print(messageData)
+output$messageMenu <- renderMenu({
+  msgs <- apply(messageData, 1, function(row) {
+    messageItem(from = row[["from"]], message = row[["message"]])
+  })
+  
+  dropdownMenu(type = "messages", .list = msgs)
+})
 
 })
 
@@ -194,6 +206,8 @@ output$stats <- DT::renderDT(DT::datatable(abdata,
                           options = list(scrollX = TRUE)))
 
 })
+
+
 
   }
 

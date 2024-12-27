@@ -7,6 +7,23 @@ library(lubridate)
 library(DBI)
 library(RSQLite)
 
+abstatus <-function(arg)
+{
+  #print(arg)
+  abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
+  abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
+  dbDisconnect(abnormalcon)
+  if(arg == "date")
+  {
+    return(unique(as.Date(abdata$time)))
+  }
+  if(arg == "count")
+  {
+    return(sum(abdata$abnormal>0))
+  }
+}
+
+
 # connect to, or setup and connect to local SQLite db
 if (file.exists("my_db_file")) {
   db <- dbConnect(SQLite(), "my_db_file")
@@ -101,7 +118,7 @@ server <- function(input, output, session) {
     if(credentials()$user_auth) {
       shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
       shinyjs::show("mainPanel")
-      shinyjs::show("notifications")
+      shinyjs::show(notificationItem)
       
        audit <- dbConnect(SQLite(), "audit")
       # 
@@ -111,11 +128,26 @@ server <- function(input, output, session) {
                             action = "login Sucess"  )
        dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
        dbDisconnect(audit)
+       from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
+       message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
+       icons<-c("truck" , "exclamation-triangle")
+       status <-c("success","warning")
+       messageData =  data.frame(from , message,icons,status)
+      
+       output$messageMenu <- renderMenu({
+         msgs <- apply(messageData, 1, function(row) {
+           messageItem(from = row[["from"]], message = row[["message"]] ,
+                       )
+         })
+
+         dropdownMenu(type = "messages", .list = msgs)
+       })
+       
       
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
       shinyjs::hide("mainPanel")
-      shinyjs::hide("notifications")
+      shinyjs::hide(dropdownMenuOutput)
       #uploadedData = reactive(uploadedData)
       audit <- dbConnect(SQLite(), "audit")
       #print(session)
@@ -143,6 +175,7 @@ server <- function(input, output, session) {
       menuItem("SDAA DASHBOARD", tabName = "Tab2" , icon = icon("chart-bar")),
       menuItem("SD LISTING", tabName = "Tab3" ,icon = icon("list")),
       menuItem("VISUAL & DATA TABLE", tabName = "Tab4" ,icon = icon("table")),
+      menuItem("Admin", tabName = "Admin" ,icon = icon("lock")),
       menuItem("HELP", tabName = "Tab5", icon = icon("info-circle")),
       menuItem("VERSION HISTORY", tabName = "Tab6", icon = icon("history"))
     )
@@ -162,6 +195,7 @@ server <- function(input, output, session) {
       SDAA_DASHBOARD_module("SDAA_DASHBOARD", uploadedData)
       Data_Insights_module_2("insights_module_2", uploadedData)
       Data_Insights_module_3("insights_module_3", uploadedData)
+      Admin_module("Admin",credentials)
       Data_Insights_module_4("insights_module_4", uploadedData)
       Data_Insights_module_5("insights_module_5", uploadedData)
     }
