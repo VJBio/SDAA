@@ -38,6 +38,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
     #print("credentials--EditTable----->")
     #print(credentials()$info)
     #print("credentials---EditTable---->")
+    shinyjs::hide("save")
     values <- reactiveValues()
     observe({ 
       if( !is.null(uploadedData$data1())) {
@@ -86,6 +87,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
       
       observeEvent(input$update_table, {
        # print("inside select 2--------------->")
+        shinyjs::show("save")
         DF <- uploadedData$data1()
        # print(head(DF))
         values[["DF"]] <- DF

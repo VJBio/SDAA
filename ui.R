@@ -58,8 +58,8 @@ ui <- dashboardPage(
   # Body setup, initially visible
   dashboardBody(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
-    #shinyjs::useShinyjs(),
-    height="100%",
+    shinyjs::useShinyjs(),
+    #height="100%",
     #includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),

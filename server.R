@@ -157,7 +157,7 @@ server <- function(input, output, session) {
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
       shinyjs::hide("mainPanel")
-      shinyjs::hide(dropdownMenuOutput)
+      shinyjs::hide("dropdownMenu")
       #uploadedData = reactive(uploadedData)
       audit <- dbConnect(SQLite(), "audit")
       #print(session)
