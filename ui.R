@@ -1,27 +1,8 @@
-#library(shinyjs)
-
-abstatus <-function(arg)
-{
-  #print(arg)
-  abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
-   abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
-   dbDisconnect(abnormalcon)
-   if(arg == "date")
-   {
-     return(unique(as.Date(abdata$time)))
-   }
-   if(arg == "count")
-   {
-     return(sum(abdata$abnormal>0))
-   }
-}
+library(shinydashboard)
 
 
 ui <- dashboardPage(
- # shinyjs::useShinyjs(),
-  # Dashboard header with logout UI
-  #dashboardHeader(dropdownMenuOutput("messageMenu")),
-  #includeCSS("www/pdash.css"),
+
   dashboardHeader(
     
    title = "SDAA",
@@ -33,9 +14,9 @@ ui <- dashboardPage(
     #    ),
    dropdownMenuOutput("messageMenu"),
    rightUi = userOutput("user"),
-    tags$li(class = "dropdown", style = "padding: 8px;", shinyauthr::logoutUI(id="logout"))
    
-    #div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
+    tags$li(class = "dropdown",style="color: red;", style = "padding: 8px;", shinyauthr::logoutUI(id="logout"))
+
     
   ),
   
@@ -60,7 +41,7 @@ ui <- dashboardPage(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
     shinyjs::useShinyjs(),
     #height="100%",
-    #includeCSS("www/pdash.css"),
+    includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
     #appResetButton('appResetId'),

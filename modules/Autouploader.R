@@ -8,6 +8,22 @@ library(RSQLite)
 library(rhandsontable)
 library(shiny)
 
+abstatus <-function(arg)
+{
+  #print(arg)
+  abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
+  abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
+  dbDisconnect(abnormalcon)
+  if(arg == "date")
+  {
+    return(unique(as.Date(abdata$time)))
+  }
+  if(arg == "count")
+  {
+    return(sum(abdata$abnormal>0))
+  }
+}
+
 
 if (file.exists("Threshold")) {
   th <- dbConnect(SQLite(), "Threshold")
@@ -182,19 +198,19 @@ abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
 output$stats <- DT::renderDT(DT::datatable(abdata, 
                                            options = list(scrollX = TRUE)))
-# from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
-# 
-# message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
-# icons<-c("truck" , "exclamation-triangle")
-# messageData =  data.frame(from , message,icons)
-# print(messageData)
-# output$messageMenu <- renderMenu({
-#   msgs <- apply(messageData, 1, function(row) {
-#     messageItem(from = row[["from"]], message = row[["message"]])
-#   })
-#   
-#   dropdownMenu(type = "messages", .list = msgs)
-# })
+from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
+
+message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
+icons<-c("truck" , "exclamation-triangle")
+messageData =  data.frame(from , message,icons)
+#print(messageData)
+output$messageMenu <- renderMenu({
+  msgs <- apply(messageData, 1, function(row) {
+    messageItem(from = row[["from"]], message = row[["message"]])
+  })
+
+  dropdownMenu(type = "messages", .list = msgs)
+})
 
 })
 

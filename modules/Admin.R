@@ -27,9 +27,9 @@ Admin_UI <- function(id) {
            collapsible = TRUE,
            fluidRow(
              column(12,
-                    rHandsontableOutput(ns("hot")),
-                    br(),
-                    actionButton(ns("update_table"), label = "update user", style = "fill")
+                    actionButton(ns("update_table"), label = "update user", style = "fill"),
+                    rHandsontableOutput(ns("hot"))
+                    
                     
              )
            )
