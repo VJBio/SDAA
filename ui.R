@@ -21,19 +21,20 @@ ui <- dashboardPage(
  # shinyjs::useShinyjs(),
   # Dashboard header with logout UI
   #dashboardHeader(dropdownMenuOutput("messageMenu")),
-  
+  #includeCSS("www/pdash.css"),
   dashboardHeader(
     
-    title = "SDAA",
-    #h3("SDAA"),
-    tags$li(
-      class = "dropdown",
-      h4("Sensitive Data Abnormality Analyzer (SDAA)       "),
-      style = "padding: 5px;"
-       ),
+   title = "SDAA",
+   
+    # tags$li(
+    #   class = "dropdown",
+    #   h4("Sensitive Data Abnormality Analyzer (SDAA)       "),
+    #   style = "padding: 5px;"
+    #    ),
    dropdownMenuOutput("messageMenu"),
+   rightUi = userOutput("user"),
     tags$li(class = "dropdown", style = "padding: 8px;", shinyauthr::logoutUI(id="logout"))
-    
+   
     #div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
     
   ),
@@ -41,6 +42,15 @@ ui <- dashboardPage(
   # Sidebar setup
   dashboardSidebar(
     collapsed = TRUE, 
+    #h3("SDAA"),
+    tags$div(
+      style = "display: flex; justify-content: center; align-items: center; height: 100px; padding: 10px;",
+      tags$img(
+        src = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png",
+        width = "160px", 
+        style = "margin: 20px auto; padding: 5px; border: 2px solid #ffffff; box-shadow: 0px 4px 10px rgba(255, 255, 255, 0.4); filter: brightness(1.5); border-radius: 5px;"
+      )
+    ),
     sidebarMenuOutput("sidebar")
    
   ),
@@ -48,20 +58,23 @@ ui <- dashboardPage(
   # Body setup, initially visible
   dashboardBody(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
-    shinyjs::useShinyjs(),
-   
+    #shinyjs::useShinyjs(),
+    height="100%",
     #includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
     #appResetButton('appResetId'),
     
-    #includeCSS("www/pdash.css"),
-    mainPanel(
+   # includeCSS("www/pdash.css"),
+    #mainPanel(
+     fluidPage( 
       id = "mainPanel",
       width=12,
+      #height="1200%",
       #align = "right",
       #includeCSS("www/pdash.css"),
       tabItems(
+       
         tabItem(tabName = "abnorm", autouploader_UI("AbnormalStatus")),
         tabItem(tabName = "Tab1", PREQUISITES_UI("PREQUISITES")),
         tabItem(tabName = "TabTH", EditTable_UI("Threshold")),

@@ -143,6 +143,16 @@ server <- function(input, output, session) {
          dropdownMenu(type = "messages", .list = msgs)
        })
        
+       output$user<- renderUser({
+         dashboardUser(
+           name = credentials()$info$user,
+           image = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png",
+           #title = reactive(Sys.time()),
+           subtitle = "Author - Vineet Jha",
+           footer = NULL
+         )
+       })
+       
       
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
@@ -162,6 +172,26 @@ server <- function(input, output, session) {
     }
   })
 
+  #AbnormalStatus-show
+  
+  observeEvent(input$AbnormalStatus$scan, {
+    print("<----here---->")
+    from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
+    message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
+    icons<-c("truck" , "exclamation-triangle")
+    status <-c("success","warning")
+    messageData =  data.frame(from , message,icons,status)
+    
+    output$messageMenu <- renderMenu({
+      msgs <- apply(messageData, 1, function(row) {
+        messageItem(from = row[["from"]], message = row[["message"]] ,
+        )
+      })
+      
+      dropdownMenu(type = "messages", .list = msgs)
+    })
+    
+  })
   
   output$sidebar <- renderMenu({
     req(credentials()$user_auth)

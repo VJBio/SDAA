@@ -28,6 +28,7 @@ Admin_UI <- function(id) {
            fluidRow(
              column(12,
                     rHandsontableOutput(ns("hot")),
+                    br(),
                     actionButton(ns("update_table"), label = "update user", style = "fill")
                     
              )
@@ -44,6 +45,8 @@ Admin_UI <- function(id) {
     fluidRow(
       column(12,
              actionButton(ns("update_audit"), label = "update", style = "fill"),
+             br(),
+             
              DT::dataTableOutput(ns("dtout2")) #%>% withSpinner(color = "#0095FF")
       )
     )
@@ -64,6 +67,12 @@ Admin_server <- function(id , credentials) {
     # DF$uploaddata =FALSE
     # DF$Threshold =FALSE
     # DF$Admin =FALSE
+    #print(DF)
+    DF$AbnormalStatus <-as.logical(DF$AbnormalStatus)
+    DF$uploaddata <-as.logical(DF$uploaddata)
+    DF$Threshold <-as.logical(DF$Threshold)
+    DF$Admin <-as.logical(DF$Admin)
+    
     
     #print(DF)
     #print(class(DF))
@@ -86,7 +95,7 @@ Admin_server <- function(id , credentials) {
       #print(DF)
     })
     
-    output$hot = renderRHandsontable(rhandsontable(DF ,useTypes = as.logical("TRUE"), stretchH = "all") %>%
+    output$hot = renderRHandsontable(rhandsontable(DF ,useTypes = as.logical("TRUE"), stretchH = "none") %>%
                                         hot_col("user" ,readOnly = TRUE)  %>%
                                         hot_col("password" ,readOnly = TRUE , type="password")  %>%
                                         hot_col("AbnormalStatus", type = "checkbox") %>%
