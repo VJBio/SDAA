@@ -1,12 +1,4 @@
-library(tidyverse)
-library(shiny)
-library(bs4Dash)
-library(DT)  
-library(waiter)  
-library(DBI)
-library(RSQLite)
-library(rhandsontable)
-library(shiny)
+
 
 abstatus <-function(arg)
 {

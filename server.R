@@ -89,9 +89,9 @@ dbDisconnect(udb)
 
 
 server <- function(input, output, session) {
-  session$onSessionEnded(function() {
-    stopApp()
-  })
+  # session$onSessionEnded(function() {
+  #   stopApp()
+  # })
   #print(input)
   #print(output)
   # logout status managed by shinyauthr module and stored here
@@ -103,6 +103,7 @@ server <- function(input, output, session) {
     data = user_base,
     user_col = user,
     pwd_col = password,
+    reload_on_logout = TRUE,
     cookie_logins = TRUE,
     sessionid_col = sessionid,
     cookie_getter = get_sessionids_from_db,
@@ -143,21 +144,23 @@ server <- function(input, output, session) {
          dropdownMenu(type = "messages", .list = msgs)
        })
        
-       output$user<- renderUser({
-         dashboardUser(
-           name = credentials()$info$user,
-           image = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png",
-           #title = reactive(Sys.time()),
-           subtitle = "Author - Vineet Jha",
-           footer = NULL
-         )
-       })
+       # output$user<- renderUser({
+       #   dashboardUser(
+       #     name = credentials()$info$user,
+       #     image = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png",
+       #     #title = reactive(Sys.time()),
+       #     subtitle = "Author - Vineet Jha",
+       #     footer = NULL
+       #   )
+       # })
        
       
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
       shinyjs::hide("mainPanel")
       shinyjs::hide("dropdownMenu")
+      
+      #session$reload()
       #uploadedData = reactive(uploadedData)
       audit <- dbConnect(SQLite(), "audit")
       #print(session)
@@ -169,6 +172,7 @@ server <- function(input, output, session) {
       dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
       dbDisconnect(audit)
      reset(id="uploadedData" )
+     #refresh()
     }
   })
 
@@ -247,16 +251,16 @@ server <- function(input, output, session) {
   
  
   
-  output$user<- renderUser({
-    req(credentials()$user_auth)
-    dashboardUser(
-      name = " ",
-      image = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png",
-      title = NULL,
-      subtitle = "Author - Sushmitha",
-      footer = NULL
-    )
-  })
+  # output$user<- renderUser({
+  #   req(credentials()$user_auth)
+  #   dashboardUser(
+  #     name = " ",
+  #     image = "https://www.iprcenter.gov/image-repository/pfizer_-2021-svg.png/@@images/image.png",
+  #     title = NULL,
+  #     subtitle = "Author - Sushmitha",
+  #     footer = NULL
+  #   )
+  # })
   
  
  

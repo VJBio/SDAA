@@ -1,9 +1,4 @@
-library(shiny)
-library(bs4Dash)
-library(DT)  
-library(waiter)  
-library(DBI)
-library(RSQLite)
+
 
 if (file.exists("Threshold")) {
   th <- dbConnect(SQLite(), "Threshold")
@@ -24,10 +19,7 @@ PREQUISITES_UI <- function(id) {
     box(
       width = 12,
       column(12, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".csv"))
-      
-      #column(3, fileInput(ns("files1"), "Upload Clin Pharma Lead Normal Values", accept = ".xlsx")),
-      
-      #column(3, fileInput(ns("files2"), "Upload Treatment Codes File", accept = ".xlsx"))
+
     ),
    
     

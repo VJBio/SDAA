@@ -13,9 +13,9 @@ ui <- dashboardPage(
     #   style = "padding: 5px;"
     #    ),
    dropdownMenuOutput("messageMenu"),
-   rightUi = userOutput("user"),
+   #rightUi = userOutput("user"),
    
-    tags$li(class = "dropdown",style="color: red;", style = "padding: 8px;", shinyauthr::logoutUI(id="logout"))
+    tags$li(class = "dropdown",style="color: red;", style = "padding: 8px;", shinyauthr::logoutUI(id="logout") )
 
     
   ),
@@ -41,7 +41,7 @@ ui <- dashboardPage(
    # div(class = "pull-right", shinyauthr::logoutUI(id = "logout")),
     shinyjs::useShinyjs(),
     #height="100%",
-    includeCSS("www/pdash.css"),
+    #includeCSS("www/pdash.css"),
     
     shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
     #appResetButton('appResetId'),
