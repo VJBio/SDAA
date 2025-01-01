@@ -24,13 +24,16 @@ EditTable_UI <- function(id) {
         #actionBttn(ns("save"), label = "Save table", style = "fill")
 
         actionButton(ns("save"), label = "Save table", style = "fill"),
-        br(),
         verbatimTextOutput(ns("verb"))
 
       ),
-    mainPanel(
+    box(
+      id=ns("thresholdTable"),
       width=12,
-      rHandsontableOutput(ns("hot")),
+      closable = FALSE,
+      status = "warning",
+      solidHeader = FALSE,
+      rHandsontableOutput(ns("hot"))
     )
   )
 }
@@ -42,6 +45,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
     #print(credentials()$info)
     #print("credentials---EditTable---->")
     shinyjs::hide("save")
+    shinyjs::hide("thresholdTable")
     values <- reactiveValues()
     observe({
       if( !is.null(uploadedData$data1())) {
@@ -93,6 +97,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
       observeEvent(input$update_table, {
        # print("inside select 2--------------->")
         shinyjs::show("save")
+      	shinyjs::show("thresholdTable")
         DF <- uploadedData$data1()
        # print(head(DF))
         values[["DF"]] <- DF
