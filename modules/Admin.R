@@ -140,7 +140,7 @@ Admin_server <- function(id , credentials) {
     dbDisconnect(audit)
     
     output$dtout2 <- DT::renderDataTable(datatable(audit.df, 
-                                        options = list(scrollX = TRUE)))
+                    options = list(scrollX = TRUE) ,rownames = FALSE ))
     })
     
   })

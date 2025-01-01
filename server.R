@@ -133,7 +133,7 @@ server <- function(input, output, session) {
        message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
        icons<-c("truck" , "exclamation-triangle")
        status <-c("success","warning")
-       messageData =  data.frame(from , message,icons,status)
+       messageData =  data.frame(from, message ,icons,status)
       
        output$messageMenu <- renderMenu({
          msgs <- apply(messageData, 1, function(row) {

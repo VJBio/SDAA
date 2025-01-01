@@ -142,14 +142,24 @@ for(file in list_of_files)
           
         )
       #print(table(merge.df$Status))
-      
-
+      remark=paste("Threshold set")
+       if(sum(is.na(merge.df$Lower_Limit)) >0 | sum(is.na(merge.df$Upper_Limit)) >0)
+       {
+       remark=paste("Threshold partially set")
+       }
+      if(sum(is.na(merge.df$Lower_Limit)) == length(merge.df$Lower_Limit) & 
+         sum(is.na(merge.df$Upper_Limit)) ==length(merge.df$Lower_Limit) ) {
+        remark=paste("Threshold not set")
+      }
       abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
       abnormalstatus<- tibble(file = basename(file),
+                          study=as.character(study),
+                          remark=remark,
                            Total =dim(merge.df)[1], 
                            abnormal =sum(merge.df$Status =="Abnormal"),
                            time = as.character(now()),
                            action = paste("autoscan file Sucess")  )
+     # print(abnormalstatus)
       dbWriteTable( abnormalcon, "AbnormalStatus" , abnormalstatus , append =TRUE)
       #print(dbReadTable(abnormalcon  ,"AbnormalStatus"))
       dbDisconnect(abnormalcon)
@@ -161,6 +171,8 @@ for(file in list_of_files)
       dbWriteTable( th, as.character(study) , data , overwrite  =TRUE)
       abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
       abnormalstatus<- tibble(file = basename(file),
+                              study=as.character(study),
+                              remark="Threshold not set",
                               Total =dim(data)[1], 
                               abnormal =0,
                               time = as.character(now()),
@@ -188,8 +200,23 @@ dbDisconnect(audit)
 abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
 abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
-output$stats <- DT::renderDT(DT::datatable(abdata, 
-                                           options = list(scrollX = TRUE)))
+output$stats <- DT::renderDT(DT::datatable(abdata, options = list(scrollX = TRUE) ,rownames = FALSE)%>%
+  formatStyle(
+    columns = names(abdata),
+    target = 'row',
+    backgroundColor = styleEqual("Threshold not set", "pink") )%>%
+  formatStyle(
+    columns = names(abdata),
+    target = 'row',
+    backgroundColor = styleEqual("Threshold partially set", "yellow") )%>%
+    formatStyle(
+      columns = names(abdata),
+      target = 'row',
+      backgroundColor = styleEqual("Threshold set", "lightgreen") )
+  )
+
+
+
 from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
 
 message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
@@ -210,9 +237,20 @@ observeEvent(input$show, {
 abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
 abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
-output$stats <- DT::renderDT(DT::datatable(abdata, 
-                          options = list(scrollX = TRUE)))
-
+output$stats <- DT::renderDT(DT::datatable(abdata, options = list(scrollX = TRUE) ,rownames = FALSE)%>%
+                               formatStyle(
+                                 columns = names(abdata),
+                                 target = 'row',
+                                 backgroundColor = styleEqual("Threshold not set", "pink") )%>%
+                               formatStyle(
+                                 columns = names(abdata),
+                                 target = 'row',
+                                 backgroundColor = styleEqual("Threshold partially set", "yellow") )%>%
+                               formatStyle(
+                                 columns = names(abdata),
+                                 target = 'row',
+                                 backgroundColor = styleEqual("Threshold set", "lightgreen") )
+)
 })
 
 
