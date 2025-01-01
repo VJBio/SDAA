@@ -7,23 +7,26 @@ EditTable_UI <- function(id) {
   ns <- NS(id)
   fluidPage(
     # fluidRow(
-    #   column(2, pickerInput(ns("study_id_select_th"), "Select Study ID", 
+    #   column(2, pickerInput(ns("study_id_select_th"), "Select Study ID",
     #                         choices = NULL, options = list(`live-search` = TRUE))),  # Dropdown for Study ID
-    #   
+    #
     #        column(2, actionBttn(ns("update_table"), label = "show table", style = "fill")) # Adding update button
-    #   
+    #
     # ),
-   
+
           wellPanel(
         #h3("Update threshold"),
         #br(),
             width=8,
-            pickerInput(ns("study_id_select_th"), "Select Study ID", 
+            pickerInput(ns("study_id_select_th"), "Select Study ID",
                         choices = NULL, options = list(`live-search` = TRUE)),
             actionButton(ns("update_table"), label = "Show table", style = "fill"),
         #actionBttn(ns("save"), label = "Save table", style = "fill")
-        
-        actionButton(ns("save"), label = "Save table", style = "fill")
+
+        actionButton(ns("save"), label = "Save table", style = "fill"),
+        br(),
+        verbatimTextOutput(ns("verb"))
+
       ),
     mainPanel(
       width=12,
@@ -40,7 +43,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
     #print("credentials---EditTable---->")
     shinyjs::hide("save")
     values <- reactiveValues()
-    observe({ 
+    observe({
       if( !is.null(uploadedData$data1())) {
     DF <- uploadedData$data1()
       }
@@ -50,10 +53,10 @@ EditTable_server <- function(id, uploadedData, credentials) {
     ###############
     th <- dbConnect(SQLite(), "Threshold")
     study_id <- dbListTables(th)
-    dbDisconnect(th) 
+    dbDisconnect(th)
     updatePickerInput(session, "study_id_select_th", choices = study_id)
-    
-    
+
+
     # Updating Study ID dropdown choices when data is available
    observe( {
       #data<-uploadedData$data1()
@@ -68,13 +71,13 @@ EditTable_server <- function(id, uploadedData, credentials) {
       #print(study_id)
       updatePickerInput(session, "study_id_select_th", choices = study_id)
     })
-      
-      uploadedData$data1 <- eventReactive(input$update_table, { 
+
+      uploadedData$data1 <- eventReactive(input$update_table, {
        # print("inside select--------------->")
          thedit <- dbConnect(SQLite(), "Threshold")
          study_id <- dbListTables(thedit)
          updatePickerInput(session, "study_id_select_th", choices = study_id)
-         
+
          query= paste0("SELECT * FROM " , "'",input$study_id_select_th,"'")
          #print(query)
          res <- dbSendQuery(thedit,query )
@@ -82,26 +85,30 @@ EditTable_server <- function(id, uploadedData, credentials) {
          #print(head(DF))
          dbClearResult(res)
          dbDisconnect(thedit)
+
+
          DF
       })
-      
+
       observeEvent(input$update_table, {
        # print("inside select 2--------------->")
         shinyjs::show("save")
         DF <- uploadedData$data1()
        # print(head(DF))
         values[["DF"]] <- DF
-         
+
         output$hot = renderRHandsontable(rhandsontable(DF ,useTypes = as.logical("TRUE"), stretchH = "all")  %>%
           hot_col("STUDYID" ,readOnly = TRUE) %>%
           hot_col("TREATXT" ,readOnly = TRUE) %>%
           hot_col("VISIT", readOnly = TRUE) %>%
-          hot_col("PCTPT",readOnly = TRUE) 
-        )                                           
+          hot_col("PCTPT",readOnly = TRUE)
+        )
+
+        output$verb <- renderText({paste("Study ID:" ,unique(DF$STUDYID) ) })
          })
-         
-        
-      
+
+
+
     ## Handsontable
     observe({
       DF <- uploadedData$data1()
@@ -118,8 +125,8 @@ EditTable_server <- function(id, uploadedData, credentials) {
       #print("EditTable2")
       #print(DF)
     })
-    
-    
+
+
     output$hot <- renderRHandsontable({
       DF <- uploadedData$data1()
       DF <- values[["DF"]]
@@ -128,10 +135,10 @@ EditTable_server <- function(id, uploadedData, credentials) {
       hot_col("STUDYID" ,readOnly = TRUE) %>%
       hot_col("TREATXT" ,readOnly = TRUE) %>%
       hot_col("VISIT", readOnly = TRUE) %>%
-      hot_col("PCTPT",readOnly = TRUE) 
+      hot_col("PCTPT",readOnly = TRUE)
     })
-    
-    ## Save 
+
+    ## Save
     observeEvent(input$save, {
       #DF <-uploadedData$data1()
       finalDF <- isolate(values[["DF"]])
@@ -142,32 +149,32 @@ EditTable_server <- function(id, uploadedData, credentials) {
       study <- distinct(finalDF[c("STUDYID")])
      # print(study)
       th <- dbConnect(SQLite(), "Threshold")
-      
+
       dbWriteTable( th, as.character(study) , finalDF , overwrite  =TRUE)
       dbDisconnect(th)
-      
+
       audit <- dbConnect(SQLite(), "audit")
       loginaudits<- tibble(user = credentials()$info$user,
-                           sessionid = credentials()$info$sessionid, 
+                           sessionid = credentials()$info$sessionid,
                            time = as.character(now()),
                            action = paste("Threshold values updated for", input$study_id_select_th  ))
       dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
       #print(tail(dbReadTable(audit ,"audits"), n=20))
       dbDisconnect(audit)
-      
+
     })
-    
-    
-    
-    
+
+
+
+
   })
-  
-} 
+
+}
 # Module to call server function
 EditTable_module <- function(id , uploadedData , credentials) {
   EditTable_UI(id)
   EditTable_server(id , uploadedData, credentials)
-  
+
 }
 
 
