@@ -1,6 +1,6 @@
 Admin_UI <- function(id) {
   ns <- NS(id)
-  
+
       fluidRow(
 
          box(
@@ -29,8 +29,8 @@ Admin_UI <- function(id) {
              column(12,
                     actionButton(ns("update_table"), label = "update user", style = "fill"),
                     rHandsontableOutput(ns("hot"))
-                    
-                    
+
+
              )
            )
          ),
@@ -46,23 +46,23 @@ Admin_UI <- function(id) {
       column(12,
              actionButton(ns("update_audit"), label = "update", style = "fill"),
              br(),
-             
+
              DT::dataTableOutput(ns("dtout2")) #%>% withSpinner(color = "#0095FF")
       )
     )
   )
       )}
-     
+
 
 Admin_server <- function(id , credentials) {
   moduleServer(id, function(input, output, session) {
     ns <- NS(id)
-    
+
     values <- reactiveValues()
     udb <- dbConnect(SQLite(), "users")
     DF <- dbReadTable(udb , "user")
     dbDisconnect(udb)
-    #to add new colun 
+    #to add new colun
     # DF$AbnormalStatus =FALSE
     # DF$uploaddata =FALSE
     # DF$Threshold =FALSE
@@ -72,13 +72,13 @@ Admin_server <- function(id , credentials) {
     DF$uploaddata <-as.logical(DF$uploaddata)
     DF$Threshold <-as.logical(DF$Threshold)
     DF$Admin <-as.logical(DF$Admin)
-    
-    
+
+
     #print(DF)
     #print(class(DF))
     values[["DF"]] <- DF
-    
-    
+
+
     ## Handsontable
     observe({
       if (!is.null(input$hot)) {
@@ -94,17 +94,17 @@ Admin_server <- function(id , credentials) {
       #print("EditTable2")
       #print(DF)
     })
-    
+
     output$hot = renderRHandsontable(rhandsontable(DF ,useTypes = as.logical("TRUE"), stretchH = "none") %>%
                                         hot_col("user" ,readOnly = TRUE)  %>%
                                         hot_col("password" ,readOnly = TRUE , type="password")  %>%
                                         hot_col("AbnormalStatus", type = "checkbox") %>%
                                         hot_col("uploaddata",type = "checkbox")  %>%
                                         hot_col("Threshold",type = "checkbox" ) %>%
-                                        hot_col("Admin",type = "checkbox" )  )    
-    
-    
-    
+                                        hot_col("Admin",type = "checkbox" )  )
+
+
+
     observeEvent(input$update_table, {
       #DF <-uploadedData$data1()
       finalDF <- isolate(values[["DF"]])
@@ -112,37 +112,37 @@ Admin_server <- function(id , credentials) {
       udb <- dbConnect(SQLite(), "users")
       dbWriteTable( udb, "user" , finalDF , overwrite  =TRUE)
       dbDisconnect(udb)
-    
-      
+
+
       audit <- dbConnect(SQLite(), "audit")
       loginaudits<- tibble(user = credentials()$info$user,
-                           sessionid = credentials()$info$sessionid, 
+                           sessionid = credentials()$info$sessionid,
                            time = as.character(now()),
                            action = paste("user updated"))
       dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
       #print(tail(dbReadTable(audit ,"audits"), n=20))
       dbDisconnect(audit)
-      
+
     })
-    
+
     # output$dtout <- DT::renderDataTable(datatable(THdata(),
     #                                               options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
     #                                               rownames = FALSE))
-    # 
+    #
     # output$dtout1 <- DT::renderDataTable(datatable(data1(),
     #                                                options = list(dom = 't', scroller = TRUE, scrollX = TRUE, "pageLength" = 100),
     #                                                rownames = FALSE))
-    
+
     observeEvent(input$update_audit, {
-      
+
     audit <- dbConnect(SQLite(), "audit")
     audit.df<-dbReadTable(audit ,"audits")
     dbDisconnect(audit)
-    
-    output$dtout2 <- DT::renderDataTable(datatable(audit.df, 
+
+    output$dtout2 <- DT::renderDataTable(datatable(audit.df,
                     options = list(scrollX = TRUE) ,rownames = FALSE ))
     })
-    
+
   })
 }
 
@@ -151,6 +151,6 @@ Admin_server <- function(id , credentials) {
 Admin_module <- function(id, credentials) {
   Admin_UI(id)
   Admin_server(id , credentials)
-  
-  
+
+
 }

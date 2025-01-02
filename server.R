@@ -44,18 +44,18 @@ add_sessionid_to_db <- function(user, sessionid, conn = db) {
     dbWriteTable(conn, "sessionids", ., append = TRUE)
   audit <- dbConnect(SQLite(), "audit")
   loginaudits<- tibble(user = user,
-                       sessionid = sessionid, 
+                       sessionid = sessionid,
                        time = as.character(now()),
                        action = "login Sucess"  )
   dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
   # loginaudits<- tibble(user = user,
-  #                      sessionid = session$token, 
+  #                      sessionid = session$token,
   #                      time = as.character(now()),
   #                      action = "login Sucess"  )
   # dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
   dbDisconnect(audit)
-  
-  
+
+
 }
 
 # This function must return a data.frame with columns user and sessionid  Other columns are also okay
@@ -72,7 +72,7 @@ get_sessionids_from_db <- function(conn = db, expiry = cookie_expiry) {
 # sample logins dataframe with passwords hashed by sodium package
 # user_base <- tibble(
 #   user = c("vineet", "Prasad"),
-#   password = sapply(c("VJ@123", "Pra@123"), sodium::password_store), 
+#   password = sapply(c("VJ@123", "Pra@123"), sodium::password_store),
 #   permissions = c("admin", "standard"),
 #   name = c("User One", "User Two")
 # )
@@ -82,7 +82,7 @@ udb <- dbConnect(SQLite(), "users")
 user_base <- dbReadTable(udb , "user")
 dbDisconnect(udb)
 #audit <- dbConnect(SQLite(), "audit")
-#dbCreateTable(audit, "audits", c(user = "TEXT", sessionid = "TEXT", 
+#dbCreateTable(audit, "audits", c(user = "TEXT", sessionid = "TEXT",
 #                                     time = "TEXT", action="TEXT"))
 #dbReadTable(audit ,"audits")
 
@@ -97,7 +97,7 @@ server <- function(input, output, session) {
   # logout status managed by shinyauthr module and stored here
   logout_init <- callModule(shinyauthr::logout, "logout", reactive(credentials()$user_auth))
   #print(logout_init)
- 
+
   credentials <- shinyauthr::loginServer(
     id = "login",
     data = user_base,
@@ -113,16 +113,48 @@ server <- function(input, output, session) {
   )
   # print(credentials()$user_auth)
   # login audit
-  
+
   # #dbReadTable(audit ,"audits")
   observe({
     if(credentials()$user_auth) {
       shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
-      shinyjs::show("mainPanel")
+      ##############Show as per user authentication######
+    	shinyjs::show("mainPanel")
+    	output$user <- renderText({credentials()$info$user })
+    	#print(credentials()$info)
+    	if( credentials()$info$AbnormalStatus == 0)
+    	{
+
+    		shinyjs::hide("shiny-tab-abnorm")
+    		shinyjs::hide("abnorm")
+    		#shinyjs::hide("abc")
+    	}
+
+
+    	if( credentials()$info$uploaddata  == 0)
+    	{
+    		shinyjs::hide("shiny-tab-Tab1")
+    		shinyjs::hide("shiny-tab-Tab2")
+    		shinyjs::hide("shiny-tab-Tab3")
+    		shinyjs::hide("shiny-tab-Tab4")
+
+    	}
+    	 if( credentials()$info$Threshold   == 0)
+    	 {
+
+    	 	shinyjs::hide("shiny-tab-TabTH")
+    	 }
+
+    	if( credentials()$info$Admin  == 0)
+    	{
+    		shinyjs::hide("shiny-tab-Admin")
+
+    	}
+
       shinyjs::show(notificationItem)
-      
+
        audit <- dbConnect(SQLite(), "audit")
-      # 
+      #
        loginaudits<- tibble(user = credentials()$info$user,
                             sessionid = session$token,
                           time = as.character(now()),
@@ -134,7 +166,7 @@ server <- function(input, output, session) {
        icons<-c("truck" , "exclamation-triangle")
        status <-c("success","warning")
        messageData =  data.frame(from, message ,icons,status)
-      
+
        output$messageMenu <- renderMenu({
          msgs <- apply(messageData, 1, function(row) {
            messageItem(from = row[["from"]], message = row[["message"]] ,
@@ -143,7 +175,7 @@ server <- function(input, output, session) {
 
          dropdownMenu(type = "messages", .list = msgs)
        })
-       
+
        # output$user<- renderUser({
        #   dashboardUser(
        #     name = credentials()$info$user,
@@ -153,19 +185,19 @@ server <- function(input, output, session) {
        #     footer = NULL
        #   )
        # })
-       
-      
+
+
     } else {
       shinyjs::addClass(selector = "body", class = "sidebar-collapse")
       shinyjs::hide("mainPanel")
       shinyjs::hide("dropdownMenu")
-      
+
       #session$reload()
       #uploadedData = reactive(uploadedData)
       audit <- dbConnect(SQLite(), "audit")
       #print(session)
       loginaudits<- tibble(user =    "",
-                           sessionid =  session$token, 
+                           sessionid =  session$token,
                            time = as.character(now()),
                            action = "Logout Sucessfull"
       )
@@ -177,7 +209,7 @@ server <- function(input, output, session) {
   })
 
   #AbnormalStatus-show
-  
+
   observeEvent(input$AbnormalStatus$scan, {
     print("<----here---->")
     from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
@@ -185,47 +217,98 @@ server <- function(input, output, session) {
     icons<-c("truck" , "exclamation-triangle")
     status <-c("success","warning")
     messageData =  data.frame(from , message,icons,status)
-    
+
     output$messageMenu <- renderMenu({
       msgs <- apply(messageData, 1, function(row) {
         messageItem(from = row[["from"]], message = row[["message"]] ,
         )
       })
-      
+
       dropdownMenu(type = "messages", .list = msgs)
     })
-    
+
   })
-  
-  output$sidebar <- renderMenu({
-    req(credentials()$user_auth)
-    ####print(credentials())
-    #print(log_out)
+
+
+  observe({
+  	if(credentials()$user_auth){
+  output$Abnormalsidebar <- renderMenu({
+  	req(credentials()$user_auth)
+  	if( credentials()$info$AbnormalStatus == 1)
+  	{
+  	sidebarMenu(
+  		id = "tabs",
+  		menuItem("AbnormalStatus", tabName = "abnorm" ,icon = icon("circle-info") )
+
+  	)
+  	}
+  })
+  output$Thresholdsidebar <- renderMenu({
+  	req(credentials()$user_auth)
+  	if( credentials()$info$Threshold  == 1)
+  	{
+  		sidebarMenu(
+  			id = "tabs",
+  			menuItem("Threshold", tabName = "TabTH" , icon = icon("edit"))
+
+  		)
+  	}
+  })
+  output$uploaddatasidebar <- renderMenu({
+  	req(credentials()$user_auth)
+  	if( credentials()$info$uploaddata   == 1)
+  	{
+  		sidebarMenu(
+  			id = "tabs",
+  			menuItem("PREQUISITES", tabName = "Tab1" ,icon = icon("clipboard") ),
+  			menuItem("SDAA DASHBOARD", tabName = "Tab2" , icon = icon("chart-bar")),
+  			menuItem("SD LISTING", tabName = "Tab3" ,icon = icon("list")),
+  			menuItem("VISUAL & DATA TABLE", tabName = "Tab4" ,icon = icon("table"))
+
+  		)
+  	}
+  })
+  output$Adminsidebar <- renderMenu({
+  	req(credentials()$user_auth)
+  	if( credentials()$info$Admin   == 1)
+  	{
+  		sidebarMenu(
+  			id = "tabs",
+  			menuItem("Admin", tabName = "Admin" ,icon = icon("lock"))
+
+  		)
+  	}
+  })
+
+
+  	output$sidebar <- renderMenu({
+  		req(credentials()$user_auth)
     sidebarMenu(
       id = "tabs",
-      menuItem("AbnormalStatus", tabName = "abnorm" ,icon = icon("circle-info") ),
-      menuItem("PREQUISITES", tabName = "Tab1" ,icon = icon("clipboard") ),
-      menuItem("Threshold", tabName = "TabTH" , icon = icon("edit")),
-      menuItem("SDAA DASHBOARD", tabName = "Tab2" , icon = icon("chart-bar")),
-      menuItem("SD LISTING", tabName = "Tab3" ,icon = icon("list")),
-      menuItem("VISUAL & DATA TABLE", tabName = "Tab4" ,icon = icon("table")),
-      menuItem("Admin", tabName = "Admin" ,icon = icon("lock")),
+      #menuItem("AbnormalStatus", tabName = "abnorm" ,icon = icon("circle-info") ),
+      #menuItem("Threshold", tabName = "TabTH" , icon = icon("edit")),
+      #menuItem("PREQUISITES", tabName = "Tab1" ,icon = icon("clipboard") ),
+      #menuItem("SDAA DASHBOARD", tabName = "Tab2" , icon = icon("chart-bar")),
+      #menuItem("SD LISTING", tabName = "Tab3" ,icon = icon("list")),
+      #menuItem("VISUAL & DATA TABLE", tabName = "Tab4" ,icon = icon("table")),
+      #menuItem("Admin", tabName = "Admin" ,icon = icon("lock")),
       menuItem("HELP", tabName = "Tab5", icon = icon("info-circle")),
       menuItem("VERSION HISTORY", tabName = "Tab6", icon = icon("history"))
     )
   })
-  
-  
-  
-  observe({ 
+
+  	}
+  })
+
+  observe({
     if(credentials()$user_auth){
       #urlSDAA <<- paste0("https://rsc.pfizer.com/SDAA")
       #uploadedData()<-NULL
       autouploader_module("AbnormalStatus",uploadedData,credentials)
-      uploadedData <-PREQUISITES_server("PREQUISITES" , credentials) 
+      uploadedData <-PREQUISITES_server("PREQUISITES" , credentials)
       #print(uploadedData)
       ## Calling the Data Insights Module and passing the reactive data correctly
-      EditTable_module("Threshold",uploadedData,credentials)
+     	EditTable_module("Threshold",uploadedData,credentials)
       SDAA_DASHBOARD_module("SDAA_DASHBOARD", uploadedData)
       Data_Insights_module_2("insights_module_2", uploadedData)
       Data_Insights_module_3("insights_module_3", uploadedData)
@@ -237,7 +320,7 @@ server <- function(input, output, session) {
       audit <- dbConnect(SQLite(), "audit")
       #print(session)
       loginaudits<- tibble(user =    "",
-                           sessionid =  session$token, 
+                           sessionid =  session$token,
                            time = as.character(now()),
                            action = "Login fail"
       )
@@ -248,9 +331,9 @@ server <- function(input, output, session) {
       #rm(PREQUISITES_server)
     }
   })
-  
- 
-  
+
+
+
   # output$user<- renderUser({
   #   req(credentials()$user_auth)
   #   dashboardUser(
@@ -261,10 +344,10 @@ server <- function(input, output, session) {
   #     footer = NULL
   #   )
   # })
-  
- 
- 
- 
-  
+
+
+
+
+
 }
 
