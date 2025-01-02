@@ -126,8 +126,22 @@ server <- function(input, output, session) {
     	{
 
     		shinyjs::hide("shiny-tab-abnorm")
-    		shinyjs::hide("abnorm")
-    		#shinyjs::hide("abc")
+    	  
+    	}else{
+    	  from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
+    	  message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
+    	  icons<-c("truck" , "exclamation-triangle")
+    	  status <-c("success","warning")
+    	  messageData =  data.frame(from, message ,icons,status)
+    	  
+    	  output$messageMenu <- renderMenu({
+    	    msgs <- apply(messageData, 1, function(row) {
+    	      messageItem(from = row[["from"]], message = row[["message"]] ,
+    	      )
+    	    })
+    	    
+    	    dropdownMenu(type = "messages", .list = msgs)
+    	  })
     	}
 
 
@@ -161,20 +175,7 @@ server <- function(input, output, session) {
                             action = "login Sucess"  )
        dbWriteTable( audit, "audits" , loginaudits , append =TRUE)
        dbDisconnect(audit)
-       from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
-       message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
-       icons<-c("truck" , "exclamation-triangle")
-       status <-c("success","warning")
-       messageData =  data.frame(from, message ,icons,status)
-
-       output$messageMenu <- renderMenu({
-         msgs <- apply(messageData, 1, function(row) {
-           messageItem(from = row[["from"]], message = row[["message"]] ,
-                       )
-         })
-
-         dropdownMenu(type = "messages", .list = msgs)
-       })
+       
 
        # output$user<- renderUser({
        #   dashboardUser(

@@ -10,13 +10,15 @@ Admin_UI <- function(id) {
            status = "warning",
            solidHeader = FALSE,
            collapsible = TRUE,
-           fluidRow(
-             column(12,
-                    align = "center",
-                    DT::dataTableOutput(ns("dtout")) #%>% withSpinner(color = "#0095FF")
-             )
-           )
-         ),
+           verbatimTextOutput(ns("dir")),
+           textInput(ns("txt"), "Enter the path to CDMO base dir below:"),
+           textOutput(ns("text")),
+           verbatimTextOutput(ns("verb")),
+           actionButton(ns("savedir"), label = "save", style = "fill")
+           
+
+           ),
+
 
          box(
            title = "User's setting",
@@ -73,7 +75,14 @@ Admin_server <- function(id , credentials) {
     DF$Threshold <-as.logical(DF$Threshold)
     DF$Admin <-as.logical(DF$Admin)
 
-
+    output$dir <- renderText({paste("BaseDir:" ,getwd())  })
+    observeEvent(input$txt,{
+    output$text <- renderText({ "Base Dir:" })
+    output$verb <- renderText({ input$txt })
+    })
+    observeEvent(input$savedir, {
+      output$dir <- renderText({paste("BaseDir:" ,input$txt )  })
+    })
     #print(DF)
     #print(class(DF))
     values[["DF"]] <- DF

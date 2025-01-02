@@ -13,7 +13,7 @@ ui <- dashboardPage(
     #   style = "padding: 5px;"
     #    ),
    dropdownMenuOutput("messageMenu"),
-   rightUi = userOutput("user"),
+   #rightUi = userOutput("user"),
    #tags$li(class = "dropdown"  , style="color: red;" ,style = "padding: 0.1px;" , verbatimTextOutput("user" )),
     tags$li(class = "dropdown",style="color: red;", style = "padding: 8px;", shinyauthr::logoutUI(id="logout") )
 
