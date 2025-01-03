@@ -14,11 +14,30 @@ ui <- dashboardPage(
     #    ),
    dropdownMenuOutput("messageMenu"),
    #rightUi = userOutput("user"),
-   #tags$li(class = "dropdown"  , style="color: red;" ,style = "padding: 0.1px;" , verbatimTextOutput("user" )),
+   tags$li(class = "dropdown"  ,style = "
+      display: block;
+      font-size: 1.5em;
+      margin-block-start: 0.5em;
+      color: white;",
+           align = "right" , textOutput("user" )),
     tags$li(class = "dropdown",style="color: red;", style = "padding: 8px;", shinyauthr::logoutUI(id="logout") )
 
 
-  ),
+  )|>
+    tagAppendChild(
+      div(
+        "Sensitive Data Abnormality Analyzer ",
+        style = "
+      display: block;
+      font-size: 1.5em;
+      margin-block-start: 0.5em;
+     
+      color: white;
+      margin-left: 5%",
+        align = "left"
+      ),
+      .cssSelector = "nav"
+    ),
 
   # Sidebar setup
   dashboardSidebar(

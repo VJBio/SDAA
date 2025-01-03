@@ -11,7 +11,7 @@ Admin_UI <- function(id) {
            solidHeader = FALSE,
            collapsible = TRUE,
            verbatimTextOutput(ns("dir")),
-           textInput(ns("txt"), "Enter the path to CDMO base dir below:"),
+           textInput(ns("txt"), "Enter the path to CDAMO5 base dir below:"),
            textOutput(ns("text")),
            verbatimTextOutput(ns("verb")),
            actionButton(ns("savedir"), label = "save", style = "fill"),
