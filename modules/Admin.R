@@ -14,12 +14,27 @@ Admin_UI <- function(id) {
            textInput(ns("txt"), "Enter the path to CDMO base dir below:"),
            textOutput(ns("text")),
            verbatimTextOutput(ns("verb")),
-           actionButton(ns("savedir"), label = "save", style = "fill")
-           
+           actionButton(ns("savedir"), label = "save", style = "fill"),
+        ),
 
-           ),
-
-
+         box(
+           title = "Autoscanner log",
+           closable = FALSE,
+           width = 12,
+           status = "warning",
+           solidHeader = FALSE,
+           collapsible = TRUE,
+           fluidRow(
+             column(12,
+                    actionButton(ns("autoscanner"), label = "view logs", style = "fill"),
+                    br(),
+                    
+                    DT::dataTableOutput(ns("autoscanner")) #%>% withSpinner(color = "#0095FF")
+                    
+                    
+             )
+           )
+         ),
          box(
            title = "User's setting",
            closable = FALSE,
@@ -151,7 +166,19 @@ Admin_server <- function(id , credentials) {
     output$dtout2 <- DT::renderDataTable(datatable(audit.df,
                     options = list(scrollX = TRUE) ,rownames = FALSE ))
     })
-
+    
+    
+    observeEvent(input$autoscanner, {
+      
+      autoscaner <- dbConnect(SQLite(), "autoscaner")
+      autoscaner.df<-dbReadTable(autoscaner ,"autoscaner")
+      dbDisconnect(autoscaner)
+      #print(autoscaner.df)
+      output$autoscanner <- DT::renderDataTable(datatable(autoscaner.df,
+                                                     options = list(scrollX = TRUE) ,rownames = FALSE ))
+    })
+    
+    
   })
 }
 

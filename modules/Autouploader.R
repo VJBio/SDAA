@@ -84,6 +84,7 @@ dbDisconnect(abnorm)
 
 observeEvent(input$scan, {
   
+  starttime<-now()
   
   abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
   if(dbExistsTable(abnormalcon, "abnormalstatus") )
@@ -186,6 +187,18 @@ for(file in list_of_files)
     dbDisconnect(th)
   }
 }
+#starttime<-Sys.time()
+endtime<-now()
+autoscaner <- dbConnect(SQLite(), "autoscaner")
+autoscanerlog<- tibble(user = credentials()$info$user,
+                     sessionid = credentials()$info$sessionid, 
+                     starttime = as.character(starttime),
+                     endtime = as.character(endtime),
+                     action = paste("scan file Sucess")  )
+dbWriteTable( autoscaner, "autoscaner" , autoscanerlog , append =TRUE)
+#print(tail(dbReadTable(audit ,"audits"), n=20))
+dbDisconnect(autoscaner)
+
 
 
 audit <- dbConnect(SQLite(), "audit")
