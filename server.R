@@ -130,13 +130,14 @@ server <- function(input, output, session) {
     	}else{
     	  from = c(  "Auto Scan run sucessfully on ","Files with Abormalties" )
     	  message =c( as.character(abstatus("date")) , as.character(abstatus("count")))
-    	  icons<-c("truck" , "exclamation-triangle")
+    	  icons<-c("truck","exclamation-triangle")
     	  status <-c("success","warning")
-    	  messageData =  data.frame(from, message ,icons,status)
+    	  messageData =  data.frame(from, message , icons,status)
     	  
     	  output$messageMenu <- renderMenu({
     	    msgs <- apply(messageData, 1, function(row) {
     	      messageItem(from = row[["from"]], message = row[["message"]] ,
+    	                  icon=icon(row[["icons"]])
     	      )
     	    })
     	    
