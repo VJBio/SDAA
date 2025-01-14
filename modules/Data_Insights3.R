@@ -229,6 +229,7 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       data.num <- as.numeric(filtered$PCORRES)
       data.num[is.na(data.num)] <- 0
       filtered$PCORRES <- data.num
+      filtered$PCTPT <- as.factor(filtered$PCTPT)
       #filtered <-  na.omit(filtered)
       ggplot_obj <- ggplot(filtered, aes(x = VISIT, y = PCORRES, color=PCTPT)) +
         geom_boxplot() +

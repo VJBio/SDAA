@@ -35,24 +35,35 @@ SDAA_DASHBOARD_UI <- function(id){
 
 
     fluidRow(
-      box(
-        title = "Total Records in Data",
-        closable = FALSE,
-        width = 4,
-        status = "warning",
-        solidHeader = FALSE,
-        collapsible = TRUE,
-        echarts4rOutput(ns("rcount"))
-      ),
+      # box(
+      #   title = "Total Records in Data",
+      #   closable = FALSE,
+      #   width = 4,
+      #   status = "warning",
+      #   solidHeader = FALSE,
+      #   collapsible = TRUE,
+      #   echarts4rOutput(ns("rcount"))
+      # ),
 
       box(
         title = "Normal and Abnormal Values based on VISIT",
+        verbatimTextOutput(ns("records")),
         closable = FALSE,
-        width = 8,
+        width = 12,
         status = "warning",
         solidHeader = FALSE,
         collapsible = TRUE,
         plotlyOutput(ns("pcorres_plot"))
+      ),
+      box(
+        title = "Concentration vs. Time profile",
+        #verbatimTextOutput(ns("records")),
+        closable = FALSE,
+        width = 12,
+        status = "warning",
+        solidHeader = FALSE,
+        collapsible = TRUE,
+        plotlyOutput(ns("pcorres_plot2"))
       )
     )
   )
@@ -92,11 +103,17 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           input$study_id_select,
           input$subj_id_select)
 
-      uploadedData$THdata() %>%
+      flt<- uploadedData$THdata() %>%
         filter(STUDYID == input$study_id_select, SUBJID == input$subj_id_select)
+      
+      output$records <- renderText({paste("Total Records" ,nrow(flt) ) })
+      
+      flt
+     
     })
 
-
+   
+      
     plot_data <- reactive({
       req(filtered_data(), uploadedData$data1())
       FLT <- filtered_data()
@@ -134,7 +151,8 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
     # })
     #print("plot_data")
     #print(plot_data)
-
+   
+    
     output$pcorres_plot <- renderPlotly({
       req(plot_data())
 
@@ -153,6 +171,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         type = 'scatter',
         mode = 'markers',
         color = ~Status,
+        fill= ~PCTPT,
         colors = c("Normal" = "blue", "Abnormal" = "red"),
         symbol = ~Status,
         symbols = c("Normal" = "circle", "Abnormal" = "cross"),
@@ -169,11 +188,49 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           showlegend = TRUE
         )
 
-      fig
+     # fig , shape=PCTPT
+      p<- ggplot(plot_df, aes(x=PCTPT, y=PCORRES , color = Status  )) +
+        geom_point(size=2 , aes(shape=Status) )+
+        theme_classic() +
+        labs(
+          x = "Visit",
+          y = "Concentration (ng/mL)",
+          title = "Concentration Values Over Visits",
+          subtitle = "Study ID"
+          
+        ) #+ facet_wrap(~VISIT , nrow=1)
     })
 
 
-
+    
+    output$pcorres_plot2 <- renderPlotly({
+      req(plot_data())
+      
+      plot_df <- plot_data()
+      
+      plot_df <- plot_df %>%
+        mutate(
+          
+          Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
+        )
+      
+      p<- ggplot(plot_df, aes(x=PCTPT, y=PCORRES   )) +
+        geom_line(aes(linetype=TREATXT, color= TREATXT))+
+        geom_point(size=2, aes(shape=Status , color=Status))+
+        theme_classic() +
+        labs(
+          x = "PCTPT",
+          y = "Concentration (ng/mL)",
+          title = "Concentration Values Over Visits",
+          subtitle = "Study ID"
+          
+        )
+      ggplotly(p)
+      
+    #p
+    })
+    
+    
     output$TreatDesc <- renderValueBox({
       req(filtered_data())
       Fdata <- filtered_data()
@@ -262,7 +319,9 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
       )
     })
 
-
+    
+    #output$records <- renderText({paste("Total Records" ,nrow(filtered_data()) ) })
+    
     output$rcount <- renderEcharts4r({
       req(filtered_data())
       Fdata <- filtered_data()

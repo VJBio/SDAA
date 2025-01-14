@@ -120,7 +120,9 @@ Admin_server <- function(id , credentials) {
     })
 
     output$hot = renderRHandsontable(rhandsontable(DF ,useTypes = as.logical("TRUE"), stretchH = "none") %>%
-                                        hot_col("user" ,readOnly = TRUE)  %>%
+                                        hot_col("user" ,readOnly = TRUE
+                                                
+                                                )  %>%
                                         hot_col("password" ,readOnly = TRUE , type="password")  %>%
                                         hot_col("AbnormalStatus", type = "checkbox") %>%
                                         hot_col("uploaddata",type = "checkbox")  %>%
