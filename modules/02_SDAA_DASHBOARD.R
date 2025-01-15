@@ -9,6 +9,8 @@ SDAA_DASHBOARD_UI <- function(id){
     fluidRow(
       column(2, pickerInput(ns("study_id_select"), "Study ID",
                             choices = NULL, options = list(`live-search` = TRUE))),
+      column(2, pickerInput(ns("trtxt_select"), "Treatment", multiple =TRUE,
+                            choices = NULL, options = list(`live-search` = TRUE))),
       # Dropdown for Study ID
 
       column(2, pickerInput(ns("subj_id_select"), "Select Subject ID",
@@ -81,8 +83,14 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
     observeEvent(uploadedData$THdata(), {
 
       study_ids <- unique(uploadedData$THdata()$STUDYID)
+      trtxt<-  unique(uploadedData$THdata()$TREATXT)
 
       updatePickerInput(session, "study_id_select", choices = study_ids)
+      updatePickerInput(session, "trtxt_select", choices = trtxt , selected= trtxt)
+      
+     
+      
+      
     })
 
 
@@ -92,6 +100,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
 
       filtered_data <- uploadedData$THdata() %>%
         filter(STUDYID == input$study_id_select)
+      
 
       subj_ids <- unique(filtered_data$SUBJID)
       updatePickerInput(session, "subj_id_select", choices = subj_ids)
@@ -104,12 +113,13 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           input$subj_id_select)
 
       flt<- uploadedData$THdata() %>%
-        filter(STUDYID == input$study_id_select, SUBJID == input$subj_id_select)
+        filter(STUDYID == input$study_id_select, SUBJID == input$subj_id_select ,
+               TREATXT == input$trtxt_select )
       
       output$records <- renderText({paste("Total Records" ,nrow(flt) ) })
       
       flt
-     
+ 
     })
 
    
@@ -225,7 +235,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           subtitle = "Study ID"
           
         )
-      ggplotly(p)
+      ggplotly(p+  guides(color=guide_legend("")) )
       
     #p
     })
