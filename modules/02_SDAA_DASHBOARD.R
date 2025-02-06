@@ -1,11 +1,14 @@
 
 SDAA_DASHBOARD_UI <- function(id){
   ns <- NS(id)
-
-  tabPanel(
-    "Load Data",
-    value = "Tab2",
-
+  
+  fluidPage(
+    titlePanel("Subject's Interactive Visualization"),
+  
+  dropdown(
+    label = "Filters", 
+    icon = icon("sliders"),
+    status = "primary",
     fluidRow(
       column(2, pickerInput(ns("study_id_select"), "Study ID",
                             choices = NULL, options = list(`live-search` = TRUE))),
@@ -16,10 +19,13 @@ SDAA_DASHBOARD_UI <- function(id){
       column(2, pickerInput(ns("subj_id_select"), "Select Subject ID",
                             choices = NULL, options = list(`live-search` = TRUE))),
       #actionButton
-      column(2, actionButton(ns("update_plots"), label = "Update Visuals", style = "fill"))
+      column(2, actionButton(ns("update_plots"), label = "Update Visuals",
+                             class = "btn btn-success", style = "width: 100%; margin-bottom: 20px;"))
+      #verbatimTextOutput(ns("records"))
       # Adding update button
 
-    ),
+    )
+  ),
 
 
     fluidRow(
@@ -49,7 +55,7 @@ SDAA_DASHBOARD_UI <- function(id){
 
       box(
         title = "Normal and Abnormal Values based on VISIT",
-        verbatimTextOutput(ns("records")),
+        
         closable = FALSE,
         width = 12,
         status = "warning",
@@ -68,8 +74,8 @@ SDAA_DASHBOARD_UI <- function(id){
         plotlyOutput(ns("pcorres_plot2"))
       )
     )
-  )
-
+  
+)
 }
 
 
@@ -114,7 +120,7 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
 
       flt<- uploadedData$THdata() %>%
         filter(STUDYID == input$study_id_select, SUBJID == input$subj_id_select ,
-               TREATXT == input$trtxt_select )
+               TREATXT %in% input$trtxt_select )
       
       output$records <- renderText({paste("Total Records" ,nrow(flt) ) })
       
@@ -199,16 +205,16 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
         )
 
      # fig , shape=PCTPT
-      p<- ggplot(plot_df, aes(x=PCTPT, y=PCORRES , color = Status  )) +
-        geom_point(size=2 , aes(shape=Status) )+
-        theme_classic() +
-        labs(
-          x = "Visit",
-          y = "Concentration (ng/mL)",
-          title = "Concentration Values Over Visits",
-          subtitle = "Study ID"
-          
-        ) #+ facet_wrap(~VISIT , nrow=1)
+      # p<- ggplot(plot_df, aes(x=PCTPT, y=PCORRES , color = Status  )) +
+      #   geom_point(size=2 , aes(shape=Status) )+
+      #   theme_classic() +
+      #   labs(
+      #     x = "Visit",
+      #     y = "Concentration (ng/mL)",
+      #     title = "Concentration Values Over Visits",
+      #     subtitle = "Study ID"
+      #     
+      #   ) #+ facet_wrap(~VISIT , nrow=1)
     })
 
 
@@ -224,9 +230,9 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
         )
       
-      p<- ggplot(plot_df, aes(x=PCTPT, y=PCORRES   )) +
+      p<- ggplot(plot_df, aes(x=PCTPT, y=PCORRES, color= Status )) +
         geom_line(aes(linetype=TREATXT, color= TREATXT))+
-        geom_point(size=2, aes(shape=Status , color=Status))+
+        geom_point(size=2, aes(shape=Status  ,text = paste("Subject:", SUBJID, "<br>Visit:", VISIT, "<br>Timepoint:", PCTPT )))+
         theme_classic() +
         labs(
           x = "PCTPT",
@@ -234,20 +240,23 @@ SDAA_DASHBOARD_server <- function(id, uploadedData) {
           title = "Concentration Values Over Visits",
           subtitle = "Study ID"
           
-        )
+        )# +
+        #scale_color_manual(labels = c("Abnormal", "Normal"), values = c("blue", "red"))
       ggplotly(p+  guides(color=guide_legend("")) )
-      
+     
+     
+      #fig 
     #p
     })
     
     
-    output$TreatDesc <- renderValueBox({
+    output$TreatDesc <- renderValueBox({0
       req(filtered_data())
       Fdata <- filtered_data()
       valueBox(
         width  = 3,
-        value = unique(Fdata$TREATXT),
-        subtitle = "Treatment Description",
+        value = nrow(Fdata),
+        subtitle = "Total Records",
         color = "black",
         href = NULL
       )

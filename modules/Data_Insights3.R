@@ -7,61 +7,94 @@ Data_Insights_UI_3 <- function(id) {
     titlePanel("Interactive Graph with Data Table"),
     fluidRow(
       column(
-        width = 2,  # Sidebar occupies 1/4th of the screen
-        div(
-          id = "filter-panel",
-          style = "background-color: #f9f9f9; padding: 10px; border-radius: 5px; max-height: 90vh; overflow-y: auto;",
-
-          # Reset and Update Buttons
-          actionButton(ns("reset_filters"), "RESET ALL", class = "btn btn-primary", style = "width: 100%; margin-bottom: 20px;"),
-          actionButton(ns("update_plots"), "Update Visuals", class = "btn btn-success", style = "width: 100%; margin-bottom: 20px;"),
-
-          # Filters Section
-          h4("Filters", style = "text-align:center; margin-top: 15px;"),
-
-          # Search Subject ID
-          textInput(ns("subjid_search"), "Search SUBJECT ID:", value = ""),
-
-          # Subject ID Filter
-          tags$div(
-            h5("Select SUBJECT ID:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("subjid_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-
-          # Visit Filter
-          tags$div(
-            h5("Select VISIT:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("visit_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-
-          # PCTPT Filter
-          tags$div(
-            h5("Select PCTPT:"),
-            tags$div(
-              style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
-              checkboxGroupInput(ns("pctpt_filter"), label = NULL, choices = NULL, selected = NULL)
-            )
-          ),
-
-          # Graph Theme Selector
-          # selectInput(ns("theme_choice"), "Choose Graph Theme:",
-          #             choices = c("Minimal" = "theme_minimal",
-          #                         "Classic" = "theme_classic",
-          #                         "Black & White" = "theme_bw",
-          #                         "Light" = "theme_light",
-          #                         "Dark" = "theme_dark",
-          #                         "Void" = "theme_void",
-          #                         "Gray" = "theme_gray"))
-        )
+        width = 2,
+      dropdown(
+        label = "Filters", 
+        icon = icon("sliders"),
+        status = "primary",
+        # Search Subject ID
+        textInput(ns("subjid_search"), "Search SUBJECT ID:", value = ""),
+        pickerInput(ns("trtxt_select"), "Treatment", multiple =TRUE,
+                    choices = NULL, options = list(`live-search` = TRUE ,
+                                                   `actions-box` = TRUE)),
+        
+        pickerInput(ns("visit_filter"), "VISIT Filter", multiple =TRUE,
+                    choices = NULL, options = list(`live-search` = TRUE ,
+                                                   `actions-box` = TRUE )),
+        
+        pickerInput(ns("pctpt_filter"), "PCTPT Filter", multiple =TRUE,
+                    choices = NULL, options = list(`live-search` = TRUE ,
+                                                   `actions-box` = TRUE )),
+       
+      )
+        ),
+      column(
+      width = 2,
+      actionButton(ns("reset_filters"), "RESET ALL", class = "btn btn-primary", style = "width: 100%; margin-bottom: 20px;"),
       ),
       column(
-        width = 10,  # Main content occupies 3/4th of the screen
+        width = 2,
+      actionButton(ns("update_plots"), "Update Visuals", class = "btn btn-success", style = "width: 100%; margin-bottom: 20px;"),
+      )
+      ),
+      # column(
+      #   width = 2,  # Sidebar occupies 1/4th of the screen
+      #   div(
+      #     id = "filter-panel",
+      #     style = "background-color: #f9f9f9; padding: 10px; border-radius: 5px; height: 100%; overflow-y: auto;",
+      # 
+      #     # Reset and Update Buttons
+      #    
+      #     # Filters Section
+      #     #h4("Filters", style = "text-align:center; margin-top: 15px;"),
+      #  
+      #    
+      #     # column(2, pickerInput(ns("study_id_select"), "Study ID",
+      #     #                       choices = NULL, options = list(`live-search` = TRUE))),
+      #     # Dropdown for Study ID
+      #     #Subject ID Filter
+      #     # tags$div(
+      #     #   h5("Select SUBJECT ID:"),
+      #     #   tags$div(
+      #     #     style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+      #     #     checkboxGroupInput(ns("subjid_filter"), label = NULL, choices = NULL, selected = NULL)
+      #     #   )
+      #     # ),
+      # 
+      #     # Visit Filter
+      #     # tags$div(
+      #     #   h5("Select VISIT:"),
+      #     #   tags$div(
+      #     #     style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+      #     #     checkboxGroupInput(ns("visit_filter"), label = NULL, choices = NULL, selected = NULL)
+      #     #   )
+      #     # ),
+      #     # 
+      #     # # PCTPT Filter
+      #     # 
+      #     # # # 
+      #     # tags$div(
+      #     #   h5("Select PCTPT:"),
+      #     #   tags$div(
+      #     #     style = "height: 150px; overflow-y: scroll; border: 1px solid #ccc; padding: 5px;",
+      #     #    
+      #     #     checkboxGroupInput(ns("pctpt_filter"), label = NULL, choices = NULL, selected = NULL)
+      #     #   )
+      #     # ),
+      # 
+      #     # Graph Theme Selector
+      #     # selectInput(ns("theme_choice"), "Choose Graph Theme:",
+      #     #             choices = c("Minimal" = "theme_minimal",
+      #     #                         "Classic" = "theme_classic",
+      #     #                         "Black & White" = "theme_bw",
+      #     #                         "Light" = "theme_light",
+      #     #                         "Dark" = "theme_dark",
+      #     #                         "Void" = "theme_void",
+      #     #                         "Gray" = "theme_gray"))
+      #   )
+      # ),
+      # column(
+      #   width = 12,  # Main content occupies 3/4th of the screen
         fluidRow(
           box(
             width = 12,
@@ -73,7 +106,7 @@ Data_Insights_UI_3 <- function(id) {
               style = "padding: 10px;",
               plotlyOutput(ns("interactive_plot") , height = "600px")
             )
-          )
+          #)
         )#,
         # fluidRow(
         #   column(
@@ -86,7 +119,7 @@ Data_Insights_UI_3 <- function(id) {
         #   )
         # )
       )
-    )
+    #)
   )
 }
 
@@ -156,9 +189,18 @@ Data_Insights_server_3 <- function(id, uploadedData) {
                                choices = unique(df$VISIT),
                                selected = unique(df$VISIT))
 
-      updateCheckboxGroupInput(session, "pctpt_filter",
-                               choices = unique(df$PCTPT),
-                               selected = unique(df$PCTPT))
+       updateCheckboxGroupInput(session, "pctpt_filter",
+                              choices = unique(df$PCTPT),
+                                selected = unique(df$PCTPT))
+       
+      updatePickerInput(session, "pctpt_filter", choices =  unique(df$PCTPT) , 
+                       selected=  unique(df$PCTPT))
+      updatePickerInput(session, "visit_filter", choices =  unique(df$VISIT) , 
+                        selected=  unique(df$VISIT))
+      
+      updatePickerInput(session, "trtxt_select", choices = unique(df$TREATXT) ,
+                        selected= unique(df$TREATXT))
+      
     })
 
 
@@ -181,6 +223,8 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       subjid_filter <- input$subjid_filter
       visit_filter <- input$visit_filter
       pctpt_filter <- input$pctpt_filter
+      trtxt<-  unique(input$trtxt_select)
+      
 
       if (is.null(subjid_filter)) {
         subjid_filter <- unique(data()$SUBJID)
@@ -191,23 +235,42 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       if (is.null(pctpt_filter)) {
         pctpt_filter <- unique(data()$PCTPT)
       }
+      if (is.null(trtxt)) {
+        trtxt <- unique(data()$TREATXT)
+      }
 
       # Filtering the data based on the inputs
       filtered <- data() %>%
         filter(
           SUBJID %in% subjid_filter,
           VISIT %in% visit_filter,
-          PCTPT %in% pctpt_filter
+          PCTPT %in% pctpt_filter, 
+          TREATXT %in% trtxt 
         )
+      #filtered <- filtered %>%
+       # filter
 
       return(filtered)
     })
 
     # Creating the ggplot object based on filtered data
     output$interactive_plot <- renderPlotly({
-      req(filtered_data())
+      req(filtered_data() ,uploadedData$data1())
       filtered <- filtered_data()
-
+      normal_values_numeric <- uploadedData$data1()
+      normal_values_numeric$Lower_Limit <- as.numeric(normal_values_numeric$Lower_Limit)
+      normal_values_numeric$Upper_Limit <- as.numeric(normal_values_numeric$Upper_Limit)
+     
+      
+      normal_values_numeric <- normal_values_numeric %>%
+        filter(
+         
+          VISIT %in% unique(filtered$VISIT),
+          PCTPT %in% unique(filtered$PCTPT) , 
+          TREATXT %in% unique(filtered$TREATXT) 
+        )
+      normal_values_numeric$PCTPT <- as.character(normal_values_numeric$PCTPT)
+      normal_values_numeric <-distinct(normal_values_numeric)
       if (nrow(filtered) == 0) {
         return(NULL)
       }
@@ -226,27 +289,67 @@ Data_Insights_server_3 <- function(id, uploadedData) {
       #    linetype = "Visit"
       #  )
 
+      
+      #print("data1")
+      #print(normal_values_numeric)
+      # Join and filter
+      #joined_data <- merge(FLT ,normal_values_numeric, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") )
+      print(sum(is.na(filtered$PCTPT)))
+      print(sum(is.na(filtered$TREATXT)))
+      print(sum(is.na(filtered$VISIT)))
+      print(dim(filtered))
+      pcpt<- unique(filtered$PCTPT)
+      x<-rep("", length(pcpt))
+      names(x)<-pcpt
+      print(x)
+      hide_pcpt<-as_labeller(x)
+      #print(hide_pcpt)      
+      
       data.num <- as.numeric(filtered$PCORRES)
       data.num[is.na(data.num)] <- 0
       filtered$PCORRES <- data.num
-      filtered$PCTPT <- as.factor(filtered$PCTPT)
-      #filtered <-  na.omit(filtered)
-      ggplot_obj <- ggplot(filtered, aes(x = VISIT, y = PCORRES, color=PCTPT)) +
+      filtered$PCTPT <- as.character(filtered$PCTPT)
+      #normal_values_numeric <-  na.omit(normal_values_numeric)
+ 
+      joined_data <- merge(filtered ,normal_values_numeric, by=c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT") )
+      df <- joined_data %>%
+        mutate(
+          
+          Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
+        )
+      ggplot_obj <- ggplot(df, aes(x = VISIT, y = PCORRES, color=PCTPT )) +
         geom_boxplot() +
-        geom_point(position = position_jitter(width = 0.2)) +
+        geom_point(position = position_jitter(width = 0.3) , size=1,
+          aes(text = paste("Subject:", SUBJID ), 
+              color= Status , shape=Status)) +
+        scale_shape_identity() +
+        geom_point(aes(y = Upper_Limit, x= VISIT , size = 30 , shape=95, color="Upper_Limit") , normal_values_numeric) +
+        geom_point(aes(y = Lower_Limit, x= VISIT , size = 30 , shape=95 , color="Lower_Limit") , normal_values_numeric) +
         theme_classic() +
         theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=1),
               legend.position = "top",
-              text = element_text(size=8)) +
-        facet_wrap(~PCTPT , scales = "free_x" , nrow=1) +
+              text = element_text(size=12)) +
+        theme(strip.background = element_blank()) + 
+        #facet_grid(TREATXT~PCTPT , scales = "free_x" )+
+
+        facet_wrap(PCTPT~TREATXT , scales = "free_x" , nrow=1 ,
+                        labeller = labeller(PCTPT = hide_pcpt)    ) +
         labs(
           x = "Time (Hours)",
           y = "Concentration (ng/mL)",
           title = "Concentration vs Time by Subject and Visit",
-          subtitle = "Study ID"
+          subtitle = "\n"
 
         )
-     ggplotly(ggplot_obj)
+       #+
+      #    guides(size=guide_legend(""))
+      
+      #print(normal_values_numeric)
+      #Upper_Limit <-normal_values_numeric[c("VISIT", "Upper_Limit")]
+      #print(Upper_Limit)
+      # ggplot_obj + scale_shape_identity() +
+      #   geom_point(aes(y = Upper_Limit, x= VISIT , color = "red", size = 3 ,shape=95) , normal_values_numeric)
+     ggplotly(ggplot_obj + guides(size=guide_legend("")))
 
 
 
