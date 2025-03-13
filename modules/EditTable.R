@@ -159,7 +159,7 @@ EditTable_server <- function(id, uploadedData, credentials) {
       dbDisconnect(th)
 
       audit <- dbConnect(SQLite(), "audit")
-      loginaudits<- tibble(user = credentials()$info$user,
+      loginaudits<- tibble(user = session$user,
                            sessionid = credentials()$info$sessionid,
                            time = as.character(now()),
                            action = paste("Threshold values updated for", input$study_id_select_th  ))

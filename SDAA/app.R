@@ -14,7 +14,9 @@ ui <- fluidPage(
 
     # Application title
     titlePanel("Old Faithful Geyser Data"),
-
+    verbatimTextOutput("verb"),
+    verbatimTextOutput("groups"),
+    
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
@@ -33,8 +35,19 @@ ui <- fluidPage(
 )
 
 # Define server logic required to draw a histogram
-server <- function(input, output) {
-
+server <- function(input, output , session) {
+#print(Sys.getenv("USER"))
+  #output$verb <- renderText({Sys.getenv()})
+  output$verb <- reactive({
+    print(session$user)
+    session$user
+  })
+  
+  output$groups <- reactive({
+    session$groups
+  })
+  
+  
     output$distPlot <- renderPlot({
         # generate bins based on input$bins from ui.R
         x    <- faithful[, 2]

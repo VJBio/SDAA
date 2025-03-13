@@ -100,30 +100,47 @@ PREQUISITES_server <- function(id , credentials) {
       #####################
       # audit log for file input
       ####################
+      validcol<-c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT", "PCORRES" )
       if (str_sub(file_input$name, -3) == "csv") {
         w$show()
         tryCatch({
           #data <- readxl::read_excel(file_input$datapath)
           data <- read.csv(file_input$datapath)
+          
           w$hide()
-          
-          
           data
         }, error = function(e) {
           w$hide()
           showModal(modalDialog(title = "Error", paste("Error reading file:", e$message)))
           NULL
         })
-        
-        
-        
-       
-        
       } else {
         w$hide() # Hide waiter if wrong file type
-        sendSweetAlert(session, title = "Error", text = "Please Select .xlsx file.", type = "error")
+        sendSweetAlert(session, title = "Error", text = "Please Select .csv file.", type = "error")
         NULL
       }
+      # data <- read.csv(file_input$datapath)
+      #   validcol<-c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT", "PCORRES" )
+      #   if (length(intersect(validcol , colnames(data))) ==5 ) {
+      #     w$show()
+      #     tryCatch({
+      #       
+      #   w$hide()
+      #   data
+      #   
+      #     }, error = function(e) {
+      #       w$hide()
+      #       showModal(modalDialog(title = "Error", paste("Error reading file:", e$message)))
+      #       NULL
+      #     })
+      #     
+      #  
+      #   
+      # } else {
+      #   w$hide() # Hide waiter if wrong file type
+      #   sendSweetAlert(session, title = "Error", text = "Please Select .csv file.", type = "error")
+      #   NULL
+      # }
     }
    
     read_data2 <- function(file_input , dataTab, data_type) {
@@ -190,7 +207,7 @@ PREQUISITES_server <- function(id , credentials) {
      # print(credentials()$info$user)
      # print(credentials()$info$sessionid)
        audit <- dbConnect(SQLite(), "audit")
-       loginaudits<- tibble(user = credentials()$info$user,
+       loginaudits<- tibble(user = session$user,
                             sessionid = credentials()$info$sessionid, 
                             time = as.character(now()),
                             action = paste("uploaded file Sucess", input$files)  )

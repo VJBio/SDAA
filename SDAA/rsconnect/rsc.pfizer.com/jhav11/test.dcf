@@ -1,12 +1,12 @@
-name: sdaa
-title: SDAA
+name: test
+title: test
 username: jhav11
 account: jhav11
 server: rsc.pfizer.com
 hostUrl: https://rsc.pfizer.com/__api__
-appId: 10406
-bundleId: 71086
-url: https://rsc.pfizer.com/SDAA/
+appId: 10916
+bundleId: 70185
+url: https://rsc.pfizer.com/test/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE

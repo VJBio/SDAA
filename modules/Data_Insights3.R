@@ -318,8 +318,8 @@ Data_Insights_server_3 <- function(id, uploadedData) {
           Status = ifelse( !is.na(Lower_Limit) & !is.na(Upper_Limit) &  (PCORRES < Lower_Limit | PCORRES > Upper_Limit), "Abnormal", "Normal")
         )
       ggplot_obj <- ggplot(df, aes(x = VISIT, y = PCORRES, color=PCTPT )) +
-        geom_boxplot() +
-        geom_point(position = position_jitter(width = 0.3) , size=1,
+        geom_violin() +
+        geom_point(position = position_jitter(width = 0.1) , size=1,
           aes(text = paste("Subject:", SUBJID ), 
               color= Status , shape=Status)) +
         scale_shape_identity() +

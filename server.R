@@ -71,12 +71,14 @@ get_sessionids_from_db <- function(conn = db, expiry = cookie_expiry) {
 
 # sample logins dataframe with passwords hashed by sodium package
 # user_base <- tibble(
-#   user = c("vineet", "Prasad"),
-#   password = sapply(c("VJ@123", "Pra@123"), sodium::password_store),
+#   user = c("vineet", "SDAA"),
+#   password = sapply(c("VJ@123", "SDAA"), sodium::password_store),
 #   permissions = c("admin", "standard"),
-#   name = c("User One", "User Two")
+#   name = c("User One", "User Two"),
+#   AbnormalStatus =c(1,1) ,
+#   uploaddata =c(1,1) ,Threshold =c(1,1),Admin=c(1,1)
 # )
-#dbWriteTable( db, "user" , user_base )
+# dbWriteTable( db, "user" , user_base )
 
 udb <- dbConnect(SQLite(), "users")
 user_base <- dbReadTable(udb , "user")
@@ -86,6 +88,13 @@ dbDisconnect(udb)
 #                                     time = "TEXT", action="TEXT"))
 #dbReadTable(audit ,"audits")
 
+#user_base <- dplyr::tibble(
+#    user = c("user", "user2"),
+#    password = c("pass", "pass2"),
+#    permissions = c("admin", "standard"),
+#    name = c("User One", "User Two")
+#  )
+  
 
 
 server <- function(input, output, session) {
@@ -97,7 +106,10 @@ server <- function(input, output, session) {
   # logout status managed by shinyauthr module and stored here
   logout_init <- callModule(shinyauthr::logout, "logout", reactive(credentials()$user_auth))
   #print(logout_init)
-
+  #user_base<-get_user_base()
+   
+    #username<- reactive({    session$user  }) 
+    #print(username)
   credentials <- shinyauthr::loginServer(
     id = "login",
     data = user_base,
@@ -120,9 +132,34 @@ server <- function(input, output, session) {
       shinyjs::removeClass(selector = "body", class = "sidebar-collapse")
       ##############Show as per user authentication######
     	shinyjs::show("mainPanel")
-    	output$user <- renderText({credentials()$info$user })
+      #credentials()$info$user<-session$user
+    	output$user <- renderText({session$user })
     	#print(credentials()$info)
-    	if( credentials()$info$AbnormalStatus == 0)
+    	#print(Sys.getenv("USER"))
+    	#print(session$user)
+    	user_base2 <- tibble(user = c(session$user) ,
+    	 password = sapply(c("SDAA"), sodium::password_store) ,
+    	 permissions = "admin",
+    	 name = session$user, AbnormalStatus =0 , 
+    	 uploaddata =0 ,Threshold =0,Admin=0  )
+    	
+    	udb <- dbConnect(SQLite(), "users")
+    	
+    	user_base <- dbReadTable(udb , "user")
+    	if(sum(user_base$user %in% user_base2$user)==0)
+    	{
+    	  dbWriteTable( udb, "user" , 	user_base2 , append  =TRUE)
+    	} 
+    	dbDisconnect(udb)
+    	udb <- dbConnect(SQLite(), "users")
+    	print(dbReadTable(udb , "user"))
+    	user_base <- dbReadTable(udb , "user")
+    	user_base <- subset(user_base, user_base$user == session$user, )[1,]
+    	#user_base <- subset(user_base, user_base$user == Sys.getenv("USER"), )[1,]
+    	#print(user_base)
+    	dbDisconnect(udb)
+    	
+    	if( user_base$AbnormalStatus == 0)
     	{
 
     		shinyjs::hide("shiny-tab-abnorm")
@@ -146,7 +183,7 @@ server <- function(input, output, session) {
     	}
 
 
-    	if( credentials()$info$uploaddata  == 0)
+    	if( user_base$uploaddata  == 0)
     	{
     		shinyjs::hide("shiny-tab-Tab1")
     		shinyjs::hide("shiny-tab-Tab2")
@@ -154,13 +191,13 @@ server <- function(input, output, session) {
     		shinyjs::hide("shiny-tab-Tab4")
 
     	}
-    	 if( credentials()$info$Threshold   == 0)
+    	 if( user_base$Threshold   == 0)
     	 {
 
     	 	shinyjs::hide("shiny-tab-TabTH")
     	 }
 
-    	if( credentials()$info$Admin  == 0)
+    	if( user_base$Admin  == 0)
     	{
     		shinyjs::hide("shiny-tab-Admin")
 
@@ -170,7 +207,7 @@ server <- function(input, output, session) {
 
        audit <- dbConnect(SQLite(), "audit")
       #
-       loginaudits<- tibble(user = credentials()$info$user,
+       loginaudits<- tibble(user = session$user,
                             sessionid = session$token,
                           time = as.character(now()),
                             action = "login Sucess"  )
@@ -198,7 +235,7 @@ server <- function(input, output, session) {
       #uploadedData = reactive(uploadedData)
       audit <- dbConnect(SQLite(), "audit")
       #print(session)
-      loginaudits<- tibble(user =    "",
+      loginaudits<- tibble(user =    session$user,
                            sessionid =  session$token,
                            time = as.character(now()),
                            action = "Logout Sucessfull"
@@ -236,7 +273,13 @@ server <- function(input, output, session) {
   	if(credentials()$user_auth){
   output$Abnormalsidebar <- renderMenu({
   	req(credentials()$user_auth)
-  	if( credentials()$info$AbnormalStatus == 1)
+    udb <- dbConnect(SQLite(), "users")
+    user_base <- dbReadTable(udb , "user")
+    user_base <- subset(user_base, user_base$user == session$user, )[1,]
+    #user_base <- subset(user_base, user_base$user == Sys.getenv("USER"), )[1,]
+    #print(user_base)
+    dbDisconnect(udb)
+  	if( user_base$AbnormalStatus == 1)
   	{
   	sidebarMenu(
   		id = "tabs",
@@ -247,7 +290,13 @@ server <- function(input, output, session) {
   })
   output$Thresholdsidebar <- renderMenu({
   	req(credentials()$user_auth)
-  	if( credentials()$info$Threshold  == 1)
+    udb <- dbConnect(SQLite(), "users")
+    user_base <- dbReadTable(udb , "user")
+    user_base <- subset(user_base, user_base$user == session$user, )[1,]
+    #user_base <- subset(user_base, user_base$user == Sys.getenv("USER"), )[1,]
+    #print(user_base)
+    dbDisconnect(udb)
+  	if( user_base$Threshold  == 1)
   	{
   		sidebarMenu(
   			id = "tabs",
@@ -258,7 +307,13 @@ server <- function(input, output, session) {
   })
   output$uploaddatasidebar <- renderMenu({
   	req(credentials()$user_auth)
-  	if( credentials()$info$uploaddata   == 1)
+    udb <- dbConnect(SQLite(), "users")
+    user_base <- dbReadTable(udb , "user")
+    user_base <- subset(user_base, user_base$user == session$user, )[1,]
+    #user_base <- subset(user_base, user_base$user == Sys.getenv("USER"), )[1,]
+    #print(user_base)
+    dbDisconnect(udb)
+  	if( user_base$uploaddata   == 1)
   	{
   		sidebarMenu(
   			id = "tabs",
@@ -272,7 +327,13 @@ server <- function(input, output, session) {
   })
   output$Adminsidebar <- renderMenu({
   	req(credentials()$user_auth)
-  	if( credentials()$info$Admin   == 1)
+    udb <- dbConnect(SQLite(), "users")
+    user_base <- dbReadTable(udb , "user")
+    user_base <- subset(user_base, user_base$user == session$user, )[1,]
+    #user_base <- subset(user_base, user_base$user == Sys.getenv("USER"), )[1,]
+    #print(user_base)
+    dbDisconnect(udb)
+  	if( user_base$Admin   == 1)
   	{
   		sidebarMenu(
   			id = "tabs",

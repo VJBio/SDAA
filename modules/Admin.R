@@ -141,7 +141,7 @@ Admin_server <- function(id , credentials) {
 
 
       audit <- dbConnect(SQLite(), "audit")
-      loginaudits<- tibble(user = credentials()$info$user,
+      loginaudits<- tibble(user = session$user,
                            sessionid = credentials()$info$sessionid,
                            time = as.character(now()),
                            action = paste("user updated"))

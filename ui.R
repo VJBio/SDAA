@@ -27,8 +27,8 @@ ui <- dashboardPage(
     tagAppendChild(
       div(
         "Sensitive Data Abnormality Analyzer ",
-        style = "
-      display: block;
+        style =
+      "display; block;
       font-size: 1.5em;
       margin-block-start: 0.5em;
      
@@ -67,7 +67,11 @@ ui <- dashboardPage(
     #height="100%",
     #includeCSS("www/pdash.css"),
 
-    shinyauthr::loginUI(id = "login", cookie_expiry = 0.1),
+    shinyauthr::loginUI(id = "login", cookie_expiry = 0.1 , 
+                        additional_ui =  tags$code(paste("please use following details to login
+                                                   Username: SDAA Password: SDAA
+                                                   If you are loging for fist time please connect admin (vineet jha) for access"
+                                                   ))),
     #appResetButton('appResetId'),
 
    # includeCSS("www/pdash.css"),

@@ -190,7 +190,7 @@ for(file in list_of_files)
 #starttime<-Sys.time()
 endtime<-now()
 autoscaner <- dbConnect(SQLite(), "autoscaner")
-autoscanerlog<- tibble(user = credentials()$info$user,
+autoscanerlog<- tibble(user = session$user,
                      sessionid = credentials()$info$sessionid, 
                      starttime = as.character(starttime),
                      endtime = as.character(endtime),
@@ -202,7 +202,7 @@ dbDisconnect(autoscaner)
 
 
 audit <- dbConnect(SQLite(), "audit")
-loginaudits<- tibble(user = credentials()$info$user,
+loginaudits<- tibble(user = session$user,
                      sessionid = credentials()$info$sessionid, 
                      time = as.character(now()),
                      action = paste("scan file Sucess")  )
