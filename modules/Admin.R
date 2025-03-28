@@ -93,10 +93,14 @@ Admin_server <- function(id , credentials) {
     output$dir <- renderText({paste("BaseDir:" ,getwd())  })
     observeEvent(input$txt,{
     output$text <- renderText({ "Base Dir:" })
+  
+    
     output$verb <- renderText({ input$txt })
     })
     observeEvent(input$savedir, {
       output$dir <- renderText({paste("BaseDir:" ,input$txt )  })
+      Sys.setenv(BaseDir =  input$txt  )
+      
     })
     #print(DF)
     #print(class(DF))

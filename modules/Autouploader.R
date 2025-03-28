@@ -89,10 +89,11 @@ observeEvent(input$scan, {
   abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
   if(dbExistsTable(abnormalcon, "abnormalstatus") )
   {
-   dbRemoveTable(abnormalcon, "abnormalstatus")
+   #dbRemoveTable(abnormalcon, "abnormalstatus")
   }
   path = "/home/jhav11/VJ"
-  path="Data"
+  path=Sys.getenv("BaseDir")
+print(path)  
 list_of_files <- list.files(path = path,
                             recursive = TRUE,
                             pattern = "\\.csv$",
@@ -100,7 +101,7 @@ list_of_files <- list.files(path = path,
 
 
 validcol<-c("STUDYID" ,"TREATXT" , "VISIT", "PCTPT", "PCORRES" )
-#print(list_of_files)
+print(list_of_files)
 for(file in list_of_files)
 {
   
