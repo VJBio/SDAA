@@ -18,7 +18,7 @@ PREQUISITES_UI <- function(id) {
     value = "Tab1",
     box(
       width = 12,
-      column(12, fileInput(ns("files"), "Upload SDAA Excel File", accept = ".csv"))
+      column(12, fileInput(ns("files"), "Upload PK data File in csv format", accept = ".csv"))
 
     ),
    

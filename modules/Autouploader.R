@@ -214,6 +214,7 @@ dbDisconnect(audit)
 abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
 abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
+colnames(abdata) <- toupper(colnames(abdata))
 output$stats <- DT::renderDT(DT::datatable(abdata, options = list(scrollX = TRUE) ,rownames = FALSE)%>%
   formatStyle(
     columns = names(abdata),
@@ -251,6 +252,8 @@ observeEvent(input$show, {
 abnormalcon <- dbConnect(SQLite(), "AbnormalStatus")
 abdata<- dbReadTable(abnormalcon  ,"AbnormalStatus")
 dbDisconnect(abnormalcon)
+colnames(abdata) <- toupper(colnames(abdata))
+
 output$stats <- DT::renderDT(DT::datatable(abdata, options = list(scrollX = TRUE) ,rownames = FALSE)%>%
                                formatStyle(
                                  columns = names(abdata),

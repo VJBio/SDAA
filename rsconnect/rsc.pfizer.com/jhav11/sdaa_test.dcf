@@ -5,8 +5,8 @@ account: jhav11
 server: rsc.pfizer.com
 hostUrl: https://rsc.pfizer.com/__api__
 appId: 11063
-bundleId: 71944
-url: https://rsc.pfizer.com/content/30a1cb83-9a4c-4c73-9c58-54e489960ac0/
+bundleId: 73368
+url: https://rsc.pfizer.com/SDAA_test/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
